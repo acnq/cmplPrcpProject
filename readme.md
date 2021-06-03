@@ -6,5 +6,4 @@
 
 ## we test mainly on Ubuntu Linux, and aim to construct a executable C- compiler
 
-## we are trying to add feedbacks and ast graph while compiling, maybe in D3 or just print out.
-
+## we are trying to add feedbacks and ast graph while compiling, maybe in D3 or just print out
