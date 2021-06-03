@@ -15,7 +15,7 @@ extern FILE* yyin;
 
 extern int yylex(void);
 
-void yyerror(char *s)
+void yyerror(std::string s);
 void display(struct node*, int);/*用于实现画出AST*/
 int typeCheck(char* type);/*类型检查*/
 
@@ -74,6 +74,7 @@ declaration:        varDeclaration   {}
 
 varDeclaration:     typeSpecifier ID SEMICOLON {}
                     | baseType ID ASSIGN expression SEMICOLON {}
+	  |  arrayType ID ASSIGN LC  arrayInitList RC SEMICOLON {}
                     ;
                 
 typeSpecifier:      baseType {}
@@ -87,7 +88,7 @@ arrayInitList:      arrayInitList COMMA arrayInit {}
                     | arrayInit {}
                     ;
 
-arrayInit:          LB arrayInitList RB {}
+arrayInit:          LC arrayInitList RC {}
                     | INT {}
                     ;
 
@@ -245,8 +246,8 @@ int main() {
     return yyparse();
 }
 
-void yyerror(char *s) {
-    fprintf(stderr, "%s\n", s);
+void yyerror(std::string s) {
+    fprintf(stderr, "%s\n", s.c_str());
     return ;
 }
 

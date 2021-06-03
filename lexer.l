@@ -6,7 +6,7 @@
 #include "parser.tab.h" 
 
 static FILE* yyparse_file_ptr;
-extern void yyerror(char* s);
+extern void yyerror(std::string s);
 %}
 
   /*定义状态,第一句有点意义不明*/

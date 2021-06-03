@@ -1,11 +1,11 @@
 1. *program $\rightarrow$ declaration-list*
 2. *declaration-list* $\rightarrow$ *declaration-list* *declaration* | *declaration*
 3. *declaration* $\rightarrow$ *var-declaration* | *fun-declaration*
-4. *var-declaration* $\rightarrow$ *type-specifier* **ID** **;** | *base_type* **ID** **=** *expression* **;**
+4. *var-declaration* $\rightarrow$ *type-specifier* **ID** **;** | *base_type* **ID** **=** *expression* **;** | *array-type* **ID ** = **{**  *array-init-list* **}** **;**
 5. *type-specifier* $\rightarrow$ *base-type* | *array-type*
-6. *array-type* $\rightarrow$ *base-type* **[**  **NUM** **]** |   *array-type* **[** **NUM** **]**  | *array-type* **[** **NUM** **]**  **=** **{**  *arr-init-list* **}**   <!-- 我们不支持定义数组的时候方括号内含有表达式 --> <!--支持多维数组-->
-7. *arr-init-list* $\rightarrow$  *arr-init-list* **,**  *arr-init* | *arr-init*
-8. *arr-init* $\rightarrow$ **{** *arr-init-list* **}** | **NUM** <!--注意这里要有方法判断括号的嵌套-->
+6. *array-type* $\rightarrow$ *base-type* **[**  **NUM** **]** |   *array-type* **[** **NUM** **]**    <!-- 我们不支持定义数组的时候方括号内含有表达式 --> <!--支持多维数组-->
+7. *array-init-list* $\rightarrow$  *array-init-list* **,**  *array-init* | *array-init*
+8. *array-init* $\rightarrow$ **{** *array-init-list* **}** | **NUM** <!--注意这里要有方法判断括号的嵌套-->
 9. *base_type* $\rightarrow$ **int** | **void** | **double**  |  **float** | **char** | **bool**
 10. *fun-declaration* $\rightarrow$ *type-specifier* **ID** **(**  *params* **)** *compound-stmt* |      **extern**  *type-specifier* **ID** **(**  *params* **)**  <!--这里实现了extern函数-->
 11. *params* $\rightarrow$ *param-list* | **void**
