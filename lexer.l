@@ -3,9 +3,10 @@
 #include <stdio.h>
 #include <string>
 #include "ASTNodes.hpp"
-#include "y.tab.h" 
+#include "parser.tab.h" 
 
 static FILE* yyparse_file_ptr;
+extern void yyerror(char* s);
 %}
 
   /*定义状态,第一句有点意义不明*/
@@ -77,7 +78,7 @@ false false|False|FALSE
 
 {true} {
     yylval.type_bool = 1;
-    return TURE;
+    return TRUE;
 }
 
 {false} {
@@ -91,10 +92,9 @@ false false|False|FALSE
     return CHAR;
 }
 
-{id} {
+{identifier} {
     strcpy(yylval.type_id, yytext);
     return ID;
-
 }
 
  /*特殊符号(按优先级), B for bitwise L for Logic*/

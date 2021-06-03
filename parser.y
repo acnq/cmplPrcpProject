@@ -1,11 +1,13 @@
 %{
 #include <stdio.h>
+#include <stdlib.h>
+#include <cstring>
 #include <ctype.h>
 #include <math.h>
 #include <string>
 #include <cstdio>
 #include <iostream>
-#include "ASTNodes.h"
+#include "ASTNodes.hpp"
 
 extern int yylineno;
 extern char* yytext;
@@ -13,7 +15,7 @@ extern FILE* yyin;
 
 extern int yylex(void);
 
-void yyerror(const char* s);
+void yyerror(char *s)
 void display(struct node*, int);/*用于实现画出AST*/
 int typeCheck(char* type);/*类型检查*/
 
@@ -21,7 +23,7 @@ int typeCheck(char* type);/*类型检查*/
 
 %union{
     /*treeNode member needed here*/
-    ...
+    /*...*/
     int type_int;
     float type_float;
     double type_double; // needed?
@@ -30,7 +32,7 @@ int typeCheck(char* type);/*类型检查*/
     char type_id[32];
 
 };
-%type <ptr> exp term factor ifactor item
+%type <ptr> term factor
 
 %token <type_int> INT   //指定INT的语义值是type_int，有词法分析得到的数值
 %token <type_float> FLOAT
@@ -40,14 +42,13 @@ int typeCheck(char* type);/*类型检查*/
 
 %token <type_id> ID
 
-%token IF ELSE WHILE RETURN FOR EXTERN//keywords
-%token INT_TYPE VOID_TYPE DOUBLE_TYPE FLOAT_TYPE CHAR_TYPE BOOL_TYPE //type words
+%token IF ELSE WHILE RETURN FOR //keywords
+%token INT_TYPE VOID_TYPE DOUBLE_TYPE FLOAT_TYPE CHAR_TYPE BOOL_TYPE EXTERN_TYPE//type words
 
 %token LP RP LC RC LB RB SEMICOLON COMMA //assoc chara
 %token ASSIGN PLUSASSIGN MINUSASSIGN MULTASSIGN DIVASSIGN MODASSIGN BORASSIGN BXORASSIGN BANDASSIGN SRASSIGN SLASSIGN //assign op
 %token LOR LAND BOR BAND BXOR SR SL PLUS MINUS MULT DIV MOD LNOT BNOT INCR DECR //op
 %token EQ NEQ LT GT LTE GTE //relop
-%
 
 %left ASSIGN PLUSASSIGN MINUSASSIGN MULTASSIGN DIVASSIGN MODASSIGN BORASSIGN BXORASSIGN BANDASSIGN SRASSIGN SLASSIGN
 %left EQ NEQ LT GT LTE GTE
@@ -71,8 +72,8 @@ declaration:        varDeclaration   {}
                     | funDeclaration  {}
                     ;
 
-varDeclaration:     typeSpecifier  ID SEMICOLON {}
-                    | baseSpecifier ID ASSIGN expression SEMICOLON {}
+varDeclaration:     typeSpecifier ID SEMICOLON {}
+                    | baseType ID ASSIGN expression SEMICOLON {}
                     ;
                 
 typeSpecifier:      baseType {}
@@ -81,7 +82,6 @@ typeSpecifier:      baseType {}
 
 arrayType:          baseType LB INT RB  {}
                     | arrayType LB INT RB {}
-                    | arrayType LB INT RB ASSIGN LC arrayInitList RC {}
                     ;
 arrayInitList:      arrayInitList COMMA arrayInit {}
                     | arrayInit {}
@@ -100,7 +100,7 @@ baseType:           INT_TYPE {}
                     ;
 
 funDeclaration:     typeSpecifier ID LP params RP compoundStmt {}
-                    | EXTERN typeSpecifier ID LP params RP {}
+                    | EXTERN_TYPE typeSpecifier ID LP params RP {}
                     ;
 
 params:             paramList {}
@@ -118,7 +118,7 @@ param:              typeSpecifier ID {}
 compoundStmt:       LC localDeclarations statementList  RC {};
 
 localDeclarations:  /*empty*/{}
-                    | localDeclarations var-declaration {}
+                    | localDeclarations varDeclaration {}
                     ;
 
 statementList:      /*emtpy*/ {}
@@ -144,9 +144,11 @@ iterationStmt:      whileStmt {}
                     | forStmt  {}
                     ;
 
-whileStmt:          WHILE LP expression RP statement; {}
+whileStmt:          WHILE LP expression RP statement {}
+                    ;
 
-forStmt:            FOR LP expression SEMICOLON expression SEMICOLON expression RP statement; {}
+forStmt:            FOR LP expression SEMICOLON expression SEMICOLON expression RP statement {}
+                    ;
  
 returnStmt:         RETURN SEMICOLON {}
                     | RETURN    expression SEMICOLON {}
@@ -170,7 +172,7 @@ assop:              ASSIGN {}
                     ;
 
 var:                ID {}
-                    | ID [expression] {}
+                    | ID LB expression RB {}
                     ;
 
 simpleExpression:   simpleExpression logop logicExpression {}
@@ -202,7 +204,7 @@ additiveExpression: additiveExpression addop term {}
                     | term {}
                     ;
 
-addop:              PLUS|MINUS;
+addop:              PLUS | MINUS;
 
 term:               term mulop factor {}
                     | factor {}
@@ -224,7 +226,7 @@ incre:              incre INCR {}
 terminal:           LP expression RP {} 
                     | var {}
                     | call {}
-                    | INT | FLOAT | CHAR | TURE | FALSE
+                    | INT | FLOAT | CHAR | TRUE | FALSE
                     ;
 
 call:               ID LP args RP{};
@@ -243,9 +245,9 @@ int main() {
     return yyparse();
 }
 
-int yyerror(char *s) {
+void yyerror(char *s) {
     fprintf(stderr, "%s\n", s);
-    return 0;
+    return ;
 }
 
 /*maybe use the following？：*/
@@ -265,12 +267,12 @@ int TypeCheck(char* type)
 	}
 }
 
-#include<stdarg.h>
-void yyerror(const char* fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    fprintf(stderr, "Grammar Error at Line %d Column %d: ", yylloc.first_line,yylloc.first_column);
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, ".\n");
-}
+// #include<stdarg.h>
+// void yyerror(const char* fmt, ...)
+// {
+//     va_list ap;
+//     va_start(ap, fmt);
+//     fprintf(stderr, "Grammar Error at Line %d Column %d: ", yylloc.first_line,yylloc.first_column);
+//     vfprintf(stderr, fmt, ap);
+//     fprintf(stderr, ".\n");
+// }
