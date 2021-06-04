@@ -87,6 +87,7 @@ false false|False|FALSE
 
 }
   /*不知为何这里参考代码写的是[1]*/
+  // 例如匹配'c', c就在第二个
 {char} {
     yylval.type_char = yytext[1]; 
     return CHAR;

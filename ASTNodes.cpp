@@ -5,7 +5,9 @@
 #include "ASTNodes.hpp"
 
 declarationListNode::declarationListNode(std::vector<Node> subnodes) {
-
+    std::vector<declarationListNode> v = std::vector<declarationListNode>();
+    std::string s = std::string("123");
+    std::nullptr_t;
 }
 
 llvm::Value * declarationListNode::codeGen() {
