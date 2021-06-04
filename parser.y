@@ -15,6 +15,8 @@ extern int yylineno;
 extern char* yytext;
 extern FILE* yyin;
 
+unique_ptr<Node> root;
+
 extern int yylex(void);
 
 void yyerror(std::string s);
@@ -24,8 +26,7 @@ int typeCheck(char* type);/*类型检查*/
 %}
 
 %union{
-    /*treeNode member needed here*/
-    /*...*/
+    unique_ptr<Node> node;
     int type_int;
     float type_float;
     double type_double; // needed?
@@ -35,6 +36,8 @@ int typeCheck(char* type);/*类型检查*/
 
 };
 /* %type <ptr> term factor */
+
+
 
 %token <type_int> INT   //指定INT的语义值是type_int，有词法分析得到的数值
 %token <type_float> FLOAT
@@ -72,88 +75,163 @@ int typeCheck(char* type);/*类型检查*/
 
 %%
 
-program:            declarationList {/* do sth with $1 */}
+program:            declarationList { root = move($1); }
                     ;
 
 declarationList:    declarationList declaration  {
-                        $1.push_back($2);
-                        $$ = $1;
+                        $1->push_back(move($2));
+                        $$ = move($1);
                     }
                     | declaration   {
-                        $$ = vector<unique_ptr<declarationNode>>();
-                        $$.push_back($1);
+                        $$ = make_unique<vector<unique_ptr<declarationNode>>>();
+                        $$->push_back(move($1));
                     }
                     ;
 
-declaration:        varDeclaration   {
-                        $$ = move(make_unique<declarationNode>($1));
+declaration:        varDeclaration { $$ = make_unique<declarationNode>(move($1)); }
+                    | funDeclaration  { $$ = make_unique<declarationNode>(move($1)); }
+                    ;
+
+varDeclaration:     baseType idList SEMICOLON { $$ = make_unique<varDeclarationNode>(move($1), move($2), nullptr, nullptr); }
+                    | baseType ID arrayPost SEMICOLON {
+                        $$ = make_unique<vector<unique_ptr<idListNode>>>();
+                        $$-> push_back(move($2));
+                        $$ = make_unique<varDeclarationNode>(move($1), move($$), move($3), nullptr);
                     }
-                    | funDeclaration  {
-                        $$ = move(make_unique<declarationNode>($1));
+	                | baseType ID arrayPost ASSIGN LC arrayInitList RC SEMICOLON {
+                        $$ = make_unique<vector<unique_ptr<idListNode>>>();
+                        $$-> push_back(move($2));
+                        $$ = make_unique<varDeclarationNode>(move($1), move($$), move($3), move($6));
                     }
                     ;
 
-varDeclaration:     baseType ID SEMICOLON {}
-                    | baseType arrayPost ID SEMICOLON {}
-                    | baseType ID ASSIGN expression SEMICOLON {}
-	                | baseType ID arrayPost ASSIGN LC arrayInitList RC SEMICOLON {}
+idList:             idList COMMA ID { 
+                        $1->push_back(make_unique<idListNode>(make_unique<string>($3), nullptr));
+                        $$ = move($1);
+                    }
+                    | idList COMMA ID ASSIGN expression {
+                        $1->push_back(make_unique<idListNode>(make_unique<string>($3), move($5)));
+                        $$ = move($1);
+                    }
+                    | ID { 
+                        $$ = make_unique<vector<unique_ptr<idListNode>>>();
+                        $$->push_back(make_unique<idListNode>(make_unique<string>($1), nullptr)); 
+                    }
+                    | ID ASSIGN expression {
+                        $$ = make_unique<vector<unique_ptr<idListNode>>>();
+                        $$->push_back(make_unique<idListNode>(make_unique<string>($1), move($3))); 
+                    }
                     ;
                 
-arrayPost:          LB INT RB  {}
-                    | arrayPost LB INT RB {}
+arrayPost:          LB INT RB  {
+                        $$ = make_unique<vector<int>>();
+                        $$->push_back($2);
+                    }
+                    | arrayPost LB INT RB {
+                        $1->push_back($3);
+                        $$ = move($1);
+                    }
                     ;
 
-arrayInitList:      arrayInitList COMMA arrayInit {}
-                    | arrayInit {}
+arrayInitList:      arrayInitList COMMA arrayInit {
+                        $1->push_back($3);
+                        $$ = move($1);
+                    }
+                    | arrayInit {
+                        $$ = make_unique<vector<unique_ptr<arrayInitListNode>>>();
+                        $$->push_back($1);
+                    }
+                    | arrayConstList { make_unique<arrayInitListNode>(move($1), true); }
                     ;
 
-arrayInit:          LC arrayInitList RC {}
-                    | INT {}
+arrayInit:          LC arrayInitList RC { make_unique<arrayInitListNode>(move($1), false); };
+
+arrayConstList:     arrayConstList COMMA single {
+                        $1->push_back(move($3));
+                        $$ = move($1);
+                    }
+                    | single {
+                        $$ = make_unique<vector<unique_ptr<singleNode>>>();
+                        $$->push_back(move($1));
+                    }
+
+baseType:           INT_TYPE { $$ = make_unique<string>($1); }
+                    | DOUBLE_TYPE { $$ = make_unique<string>($1); }
+                    | FLOAT_TYPE { $$ = make_unique<string>($1); }
+                    | CHAR_TYPE { $$ = make_unique<string>($1); }
+                    | BOOL_TYPE { $$ = make_unique<string>($1); }
                     ;
 
-baseType:           INT_TYPE { $$ =  }
-                    | DOUBLE_TYPE {}
-                    | FLOAT_TYPE {}
-                    | CHAR_TYPE {}
-                    | BOOL_TYPE {}
+funDeclaration:     baseType ID LP params RP compoundStmt { $$ = make_unique<funDeclarationNode>(make_unique<string>($3), move($5), false) }
+                    | VOID_TYPE ID LP params RP compoundStmt { $$ = make_unique<funDeclarationNode>(nullptr, move($5), false) }
+                    | EXTERN_TYPE baseType ID LP params RP SEMICOLON { $$ = make_unique<funDeclarationNode>(make_unique<string>($3), move($5), true) }
+                    | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON { $$ = make_unique<funDeclarationNode>(nullptr, move($5), true) }
                     ;
 
-funDeclaration:     baseType ID LP params RP compoundStmt {}
-                    | VOID_TYPE ID LP params RP compoundStmt {}
-                    | EXTERN_TYPE baseType ID LP params RP SEMICOLON {}
-                    | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON {}
-                    ;
-
-params:             paramList {}
+params:             paramList { $$ = move($1) }
                     | VOID_TYPE { $$ = nullptr; }
                     ;
 
-paramList:          paramList COMMA param {}
-                    |  param {}
+paramList:          paramList COMMA param {
+                        $1->push_back(move($3));
+                        $$ = move($1);
+                    }
+                    |  param {
+                        $$ = make_unique<vector<unique_ptr<paramNode>>>();
+                        $$->push_back(move($1));
+                    }
                     ;
 
-param:              baseType ID {}
-                    | baseType ID LB RB  {}
+param:              baseType ID { $$ = make_unique<paramNode>(move($1), move($2), nullptr) }
+                    | baseType ID arrayPostParam { $$ = make_unique<paramNode>(move($1), move($2), move($3)) }
                     ;
 
-compoundStmt:       LC localDeclarations statementList  RC {};
-
-localDeclarations:  %empty {}
-                    | localDeclarations varDeclaration {}
+arrayPostParam:     LB RB {
+                        $$ = make_unique<vector<int>>();
+                    }
+                    LB INT RB  {
+                        $$ = make_unique<vector<int>>();
+                    }
+                    | arrayPostParam LB INT RB {
+                        $1->push_back($3);
+                        $$ = move($1);
+                    }
                     ;
 
-statementList:      %empty {}
-                    | statementList statement {}
+compoundStmt:       LC localDeclarations statementList RC { $$ = make_unique<compoundStmtNode>(move($1), move($2)); }
+                    | LC localDeclarations RC { $$ = make_unique<compoundStmtNode>(move($1), nullptr); }
+                    | LC statementList RC { $$ = make_unique<compoundStmtNode>(nullptr, move($2)); }
+                    | LC RC { $$ = make_unique<compoundStmtNode>(nullptr, nullptr); }
                     ;
 
-statement:          expressionStmt {}
-                    | compoundStmt {}
-                    | selectionStmt {}
-                    | iterationStmt {}
-                    | returnStmt {}
+localDeclarations:  varDeclaration {
+                        $$ = make_unique<vector<unique_ptr<varDeclarationNode>>>();
+                        $$->push_back(move($1));
+                    }
+                    | localDeclarations varDeclaration { 
+                        $1->push_back(move($2));
+                        $$ = move($1);
+                    }
                     ;
 
-expressionStmt:     expression SEMICOLON { $$ = make_unique<expressionNode>(move($1)); }
+statementList:      statement { 
+                        $$ = make_unique<vector<unique_ptr<statementNode>>>();
+                        $$->push_back(move($1));
+                    }
+                    | statementList statement {
+                        $1->push_back(move($2));
+                        $$ = move($1);
+                    }
+                    ;
+
+statement:          expressionStmt { $$ = make_unique<statementNode>(move($1)); }
+                    | compoundStmt { $$ = make_unique<statementNode>(move($1)); }
+                    | selectionStmt { $$ = make_unique<statementNode>(move($1)); }
+                    | iterationStmt { $$ = make_unique<statementNode>(move($1)); }
+                    | returnStmt { $$ = make_unique<statementNode>(move($1)); }
+                    ;
+
+expressionStmt:     expression SEMICOLON { $$ = move($1); }
                     | SEMICOLON { $$ = nullptr; }
                     ;
 
@@ -161,8 +239,8 @@ selectionStmt:      IF LP expression RP statement { $$ = make_unique<selectionSt
                     | IF LP expression RP statement ELSE statement { $$ = make_unique<selectionStmtNode>(move($3), move($5), move($7)); }
                     ;
 
-iterationStmt:      whileStmt { $$ = make_unique<iterationStmtNode>(move($1)); }
-                    | forStmt { $$ = make_unique<iterationStmtNode>(move($1)); }
+iterationStmt:      whileStmt { $$ = move($1); }
+                    | forStmt { $$ = move($1); }
                     ;
 
 whileStmt:          WHILE LP expression RP statement {
@@ -252,7 +330,7 @@ argList:            argList COMMA expression {
                         $$ = move($1);
                     }
                     | expression {
-                        $$ = make_unique<vector<unique_ptr<argListNode>>>();
+                        $$ = make_unique<vector<unique_ptr<expressionNode>>>();
                         $$->push_back(move($1));
                     }
                     ;    

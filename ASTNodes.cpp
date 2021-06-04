@@ -4,236 +4,138 @@
 #include <string>
 #include "ASTNodes.hpp"
 
-declarationListNode::declarationListNode(std::vector<Node> subnodes) {
-    std::vector<declarationListNode> v = std::vector<declarationListNode>();
-    std::string s = std::string("123");
-    std::nullptr_t;
-}
-
-llvm::Value * declarationListNode::codeGen() {
+declarationNode::declarationNode() {
 
 }
 
-declarationNode::declarationNode(std::vector<Node> subnodes) {
+Value * declarationNode::codeGen() {
 
 }
 
-llvm::Value * declarationNode::codeGen() {
+varDeclarationNode::varDeclarationNode() {
 
 }
 
-varDeclarationNode::varDeclarationNode(std::vector<Node> subnodes) {
+Value * varDeclarationNode::codeGen() {
 
 }
 
-llvm::Value * varDeclarationNode::codeGen() {
+idListNode::idListNode() {
 
 }
 
-typeSpecifierNode::typeSpecifierNode(std::vector<Node> subnodes) {
+Value * idListNode::codeGen() {
 
 }
 
-llvm::Value * typeSpecifierNode::codeGen() {
+arrayInitListNode::arrayInitListNode() {
 
 }
 
-arrayTypeNode::arrayTypeNode(std::vector<Node> subnodes) {
+Value * arrayInitListNode::codeGen() {
 
 }
 
-llvm::Value * arrayTypeNode::codeGen() {
+funDeclarationNode::funDeclarationNode() {
 
 }
 
-arrayInitListNode::arrayInitListNode(std::vector<Node> subnodes) {
+Value * funDeclarationNode::codeGen() {
 
 }
 
-llvm::Value * arrayInitListNode::codeGen() {
+paramNode::paramNode() {
 
 }
 
-arrayInitNode::arrayInitNode(std::vector<Node> subnodes) {
+Value * paramNode::codeGen() {
 
 }
 
-llvm::Value * arrayInitNode::codeGen() {
+compoundStmtNode::compoundStmtNode() {
 
 }
 
-baseTypeNode::baseTypeNode(std::vector<Node> subnodes) {
+Value * compoundStmtNode::codeGen() {
 
 }
 
-llvm::Value * baseTypeNode::codeGen() {
+statementNode::statementNode() {
 
 }
 
-funDeclarationNode::funDeclarationNode(std::vector<Node> subnodes) {
+Value * statementNode::codeGen() {
 
 }
 
-llvm::Value * funDeclarationNode::codeGen() {
+selectionStmtNode::selectionStmtNode() {
 
 }
 
-paramsNode::paramsNode(std::vector<Node> subnodes) {
+Value * selectionStmtNode::codeGen() {
 
 }
 
-llvm::Value * paramsNode::codeGen() {
+whileStmtNode::whileStmtNode() {
 
 }
 
-compoundStmtNode::compoundStmtNode(std::vector<Node> subnodes) {
+Value * whileStmtNode::codeGen() {
 
 }
 
-llvm::Value * compoundStmtNode::codeGen() {
+forStmtNode::forStmtNode() {
 
 }
 
-localDeclarationsNode::localDeclarationsNode(std::vector<Node> subnodes) {
+Value * forStmtNode::codeGen() {
 
 }
 
-llvm::Value * localDeclarationsNode::codeGen() {
+returnStmtNode::returnStmtNode() {
 
 }
 
-statementListNode::statementListNode(std::vector<Node> subnodes) {
+Value * returnStmtNode::codeGen() {
 
 }
 
-llvm::Value * statementListNode::codeGen() {
+expressionNode::expressionNode() {
 
 }
 
-statementNode::statementNode(std::vector<Node> subnodes) {
+Value * expressionNode::codeGen() {
 
 }
 
-llvm::Value * statementNode::codeGen() {
+varNode::varNode() {
 
 }
 
-expressionStmtNode::expressionStmtNode(std::vector<Node> subnodes) {
+Value * varNode::codeGen() {
 
 }
 
-llvm::Value * expressionStmtNode::codeGen() {
+operandNode::operandNode() {
 
 }
 
-selectionStmtNode::selectionStmtNode(std::vector<Node> subnodes) {
+Value * operandNode::codeGen() {
 
 }
 
-llvm::Value * selectionStmtNode::codeGen() {
+singleNode::singleNode() {
 
 }
 
-iterationStmtNode::iterationStmtNode(std::vector<Node> subnodes) {
+Value * singleNode::codeGen() {
 
 }
 
-llvm::Value * iterationStmtNode::codeGen() {
+callNode::callNode() {
 
 }
 
-whileStmtNode::whileStmtNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * whileStmtNode::codeGen() {
-
-}
-
-forStmtNode::forStmtNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * forStmtNode::codeGen() {
-
-}
-
-returnStmtNode::returnStmtNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * returnStmtNode::codeGen() {
-
-}
-
-expressionNode::expressionNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * expressionNode::codeGen() {
-
-}
-
-assopNode::assopNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * assopNode::codeGen() {
-
-}
-
-varNode::varNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * varNode::codeGen() {
-
-}
-
-operandNode::operandNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * operandNode::codeGen() {
-
-}
-
-prefixNode::prefixNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * prefixNode::codeGen() {
-
-}
-
-singleNode::singleNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * singleNode::codeGen() {
-
-}
-
-callNode::callNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * callNode::codeGen() {
-
-}
-
-argsNode::argsNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * argsNode::codeGen() {
-
-}
-
-argListNode::argListNode(std::vector<Node> subnodes) {
-
-}
-
-llvm::Value * argListNode::codeGen() {
+Value * callNode::codeGen() {
 
 }
