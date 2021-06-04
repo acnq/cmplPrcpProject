@@ -32,7 +32,7 @@ int typeCheck(char* type);/*类型检查*/
     char type_id[32];
 
 };
-%type <ptr> term factor
+/* %type <ptr> term factor */
 
 %token <type_int> INT   //指定INT的语义值是type_int，有词法分析得到的数值
 %token <type_float> FLOAT
@@ -50,9 +50,18 @@ int typeCheck(char* type);/*类型检查*/
 %token LOR LAND BOR BAND BXOR SR SL PLUS MINUS MULT DIV MOD LNOT BNOT INCR DECR //op
 %token EQ NEQ LT GT LTE GTE //relop
 
-%left ASSIGN PLUSASSIGN MINUSASSIGN MULTASSIGN DIVASSIGN MODASSIGN BORASSIGN BXORASSIGN BANDASSIGN SRASSIGN SLASSIGN
-%left EQ NEQ LT GT LTE GTE
-%right LNOT BNOT MINUS
+%right ASSIGN PLUSASSIGN MINUSASSIGN MULTASSIGN DIVASSIGN MODASSIGN BORASSIGN BXORASSIGN BANDASSIGN SRASSIGN SLASSIGN
+%left LOR
+%left LAND
+%left BOR
+%left BXOR
+%left BAND
+%left EQ NEQ
+%left LT GT LTE GTE
+%left SL SR
+%left PLUS MINUS
+%left MULT DIV MOD
+%right LNOT BNOT
 
 %nonassoc ELSE
 
@@ -72,18 +81,16 @@ declaration:        varDeclaration   {}
                     | funDeclaration  {}
                     ;
 
-varDeclaration:     typeSpecifier ID SEMICOLON {}
+varDeclaration:     baseType ID SEMICOLON {}
+                    | baseType arrayPost ID SEMICOLON {}
                     | baseType ID ASSIGN expression SEMICOLON {}
-	  |  arrayType ID ASSIGN LC  arrayInitList RC SEMICOLON {}
+	                | baseType ID arrayPost ASSIGN LC arrayInitList RC SEMICOLON {}
                     ;
                 
-typeSpecifier:      baseType {}
-                    | arrayType {}
+arrayPost:          LB INT RB  {}
+                    | arrayPost LB INT RB {}
                     ;
 
-arrayType:          baseType LB INT RB  {}
-                    | arrayType LB INT RB {}
-                    ;
 arrayInitList:      arrayInitList COMMA arrayInit {}
                     | arrayInit {}
                     ;
@@ -93,15 +100,16 @@ arrayInit:          LC arrayInitList RC {}
                     ;
 
 baseType:           INT_TYPE {}
-                    | VOID_TYPE {}
                     | DOUBLE_TYPE {}
                     | FLOAT_TYPE {}
                     | CHAR_TYPE {}
                     | BOOL_TYPE {}
                     ;
 
-funDeclaration:     typeSpecifier ID LP params RP compoundStmt {}
-                    | EXTERN_TYPE typeSpecifier ID LP params RP {}
+funDeclaration:     baseType ID LP params RP compoundStmt {}
+                    | VOID_TYPE ID LP params RP compoundStmt {}
+                    | EXTERN_TYPE baseType ID LP params RP SEMICOLON {}
+                    | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON {}
                     ;
 
 params:             paramList {}
@@ -112,17 +120,17 @@ paramList:          paramList COMMA param {}
                     |  param {}
                     ;
 
-param:              typeSpecifier ID {}
-                    | typeSpecifier ID LB RB  {}
+param:              baseType ID {}
+                    | baseType ID LB RB  {}
                     ;
 
 compoundStmt:       LC localDeclarations statementList  RC {};
 
-localDeclarations:  /*empty*/{}
+localDeclarations:  %empty {}
                     | localDeclarations varDeclaration {}
                     ;
 
-statementList:      /*emtpy*/ {}
+statementList:      %empty {}
                     | statementList statement {}
                     ;
 
@@ -152,11 +160,11 @@ forStmt:            FOR LP expression SEMICOLON expression SEMICOLON expression 
                     ;
  
 returnStmt:         RETURN SEMICOLON {}
-                    | RETURN    expression SEMICOLON {}
+                    | RETURN expression SEMICOLON {}
                     ;
 
 expression:         var assop expression {}
-                    | simpleExpression {}
+                    | operand {}
                     ;
 
 assop:              ASSIGN {}
@@ -168,7 +176,7 @@ assop:              ASSIGN {}
                     | BANDASSIGN {}     
                     | BORASSIGN {} 
                     | BXORASSIGN {}
-                    | SLASSIGN {} 
+                    | SLASSIGN {}
                     | SRASSIGN {}
                     ;
 
@@ -176,63 +184,40 @@ var:                ID {}
                     | ID LB expression RB {}
                     ;
 
-simpleExpression:   simpleExpression logop logicExpression {}
-                    | logicExpression {}
+operand:            operand LOR operand {}
+                    | operand LAND operand {}
+                    | operand BOR operand {}
+                    | operand BXOR operand {}
+                    | operand BAND operand {}
+                    | operand EQ operand {}
+                    | operand NEQ operand {}
+                    | operand LT operand {}
+                    | operand GT operand {}
+                    | operand LTE operand {}
+                    | operand GTE operand {}
+                    | operand SL operand {}
+                    | operand SR operand {}
+                    | operand PLUS operand {}
+                    | operand MINUS operand {}
+                    | operand MULT operand {}
+                    | operand DIV operand {}
+                    | operand MOD operand {}
+                    | prefix LP operand RP {}
+                    | prefix single
+                    ;
+                    
+
+prefix:             %empty | BNOT | LNOT | MINUS
                     ;
 
-logop:              LOR {} 
-                    | LAND {};
-
-logicExpression:     logicExpression bitop bitExpression {}
-                    | bitExpression {}
-                    ;
-
-bitop:              BOR|BAND|BXOR;
-
-bitExpression:      bitExpression relop shiftExpression {}
-                    | shiftExpression {}
-                    ;
-
-relop:              EQ|NEQ|LT|GT|LTE|GTE;
-
-shiftExpression:    shiftExpression shiop additiveExpression {}
-                    | additiveExpression {}
-                    ;
-
-shiop:              SL|SR;
-
-additiveExpression: additiveExpression addop term {}
-                    | term {}
-                    ;
-
-addop:              PLUS | MINUS;
-
-term:               term mulop factor {}
-                    | factor {}
-                    ;
-
-mulop:              MULT | DIV | MOD;
-
-factor:             LNOT factor {}
-                    | BNOT factor {}
-                    | MINUS factor {}
-                    | incre {}
-                    ;
-
-incre:              incre INCR {} 
-                    | incre DECR {} 
-                    | terminal {}
-                    ;
-
-terminal:           LP expression RP {} 
-                    | var {}
+single:             ID {}
                     | call {}
                     | INT | FLOAT | CHAR | TRUE | FALSE
                     ;
 
-call:               ID LP args RP{};
+call:               ID LP args RP {};
 
-args:               /*empty*/{}
+args:               %empty {}
                     | argList {} 
                     ;
 
