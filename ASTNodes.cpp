@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <utility>
 #include <string>
 #include "ASTNodes.hpp"
 #include "parser.tab.h"
@@ -12,12 +13,30 @@ static std::unique_ptr<LLVMContext> TheContext;
 static std::unique_ptr<Module> TheModule;
 static std::unique_ptr<IRBuilder<>> Builder;
 
-static vector<map<string, Value *> > varTable;
+// static vector<map<string, Value *> > varTable;
+static vector<map<string, pair<Value *, vector<int> > > > varTable;
 static map<string, Function *> funcTable;
 
 static AllocaInst *CreateEntryBlockAlloca(Function *func, Type * type, const string name) {
     IRBuilder<> TmpB(&func->getEntryBlock(), func->getEntryBlock().begin());
         TmpB.CreateAlloca(type, 0, name.c_str());
+}
+
+static int type2int(Type * t) {
+    if(t == Type::getInt1Ty(*TheContext))
+        return 0;
+    else if(t == Type::getInt8Ty(*TheContext))
+        return 1;
+    else if(t == Type::getInt32Ty(*TheContext))
+        return 2;
+    else if(t == Type::getFloatTy(*TheContext))
+        return 3;
+}
+
+static bool typeNoSmaller(Type * t1, Type * t2) {
+    if(type2int(t1) >= type2int(t2))
+        return true;
+    return false;
 }
 
 static Type * str2type(string str) {
@@ -67,7 +86,7 @@ Value * VarDeclarationNode::codeGen() {
     if(arrayPost == nullptr && arrayConstList == nullptr) {
         for(auto node : *idList) {
             AllocaInst * variable = CreateEntryBlockAlloca(outerLayer, thisType, *(node->id));
-            varTable.back()[*(node->id)] = variable;
+            varTable.back()[*(node->id)] = pair<Value *, vector<int> >(variable, vector<int>());
             if(node->initExp)
                 Builder->CreateStore(node->initExp->codeGen(), variable);
         }
@@ -77,7 +96,7 @@ Value * VarDeclarationNode::codeGen() {
         for(auto i : *arrayPost)
             size *= i;
         AllocaInst * variable = CreateEntryBlockAlloca(outerLayer, ArrayType::get(thisType, size), *(idList->at(0)->id));
-        varTable.back()[*(idList->at(0)->id)] = variable;
+        varTable.back()[*(idList->at(0)->id)] = pair<Value *, vector<int> >(variable, *arrayPost);
         if(arrayConstList) {
             for(int i = 0; i < arrayConstList->size(); i++)
                 Builder->CreateStore(arrayConstList->at(i)->codeGen(), Builder->CreateGEP(variable, ConstantInt::get(*TheContext, APInt(i, 32))));
@@ -155,7 +174,7 @@ Value * FunDeclarationNode::codeGen() {
     
     Function * F = Function::Create(FT, Function::ExternalLinkage, *id, TheModule.get());
 
-    varTable.push_back(map<string, Value *>());
+    varTable.push_back(map<string, pair<Value *, vector<int> > > ());
     BasicBlock * currBlock = BasicBlock::Create(*TheContext, "intoFunction", F);
     Builder->SetInsertPoint(currBlock);
 
@@ -163,7 +182,7 @@ Value * FunDeclarationNode::codeGen() {
     unsigned Idx = 0;
     for (auto &Arg : F->args()) {
         Arg.setName(*(params->at(Idx++)->id));
-        varTable.back()[string(Arg.getName())] = &Arg;
+        varTable.back()[string(Arg.getName())] = pair<Value *, vector<int> >(&Arg, vector<int>());
     }
     if(!isExtern)
         return functionBody->codeGen(afterBlock);
@@ -254,7 +273,7 @@ void FunctionBodyNode::printNode(int layer) {
 }
 
 Value * CompoundStmtNode::codeGen() {
-    varTable.push_back(map<string, Value *>());
+    varTable.push_back(map<string, pair<Value *, vector<int> > > ());
     Function * context = Builder->GetInsertBlock()->getParent();
     BasicBlock * currBlock = BasicBlock::Create(*TheContext, "intoBlock", context);
     BasicBlock * afterBlock = BasicBlock::Create(*TheContext, "outOfBlock", context);
@@ -487,10 +506,82 @@ Value * ExpressionNode::codeGen() {
     if(operand)
         return operand->codeGen();
     else {
-        // if(*op == "ASSIGN") {
-        //     Value * result = expression->codeGen();
-        //     Builder->CreateStore(result, )
-        // }
+        Value * result = expression->codeGen();
+        Value * variable = var->codeGen();
+        if(!typeNoSmaller(variable->getType(), result->getType())) {
+            // Error!
+        }
+        else {
+            if(variable->getType() != result->getType())
+                result = Builder->CreateIntCast(result, variable->getType(), true);
+            if(*op == "ASSIGN") {
+                Builder->CreateStore(result, variable);
+            }
+            else if(*op == "BANDASSIGN") {
+                Value * tmp = Builder->CreateAnd(variable, result);
+                Builder->CreateStore(tmp, variable);
+            }
+            else if(*op == "BORASSIGN") {
+                Value * tmp = Builder->CreateOr(variable, result);
+                Builder->CreateStore(tmp, variable);
+            }
+            else if(*op == "BXORASSIGN") {
+                Value * tmp = Builder->CreateXor(variable, result);
+                Builder->CreateStore(tmp, variable);
+            }
+            else if(*op == "SLASSIGN") {
+                Value * tmp = Builder->CreateShl(variable, result);
+                Builder->CreateStore(tmp, variable);
+            }
+            else if(*op == "SLASSIGN") {
+                Value * tmp = Builder->CreateAShr(variable, result);
+                Builder->CreateStore(tmp, variable);
+            }
+            else if(result->getType() != Type::getFloatTy(*TheContext)) {
+                if(*op == "PLUSASSIGN") {
+                    Value * tmp = Builder->CreateAdd(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "MINUSASSIGN") {
+                    Value * tmp = Builder->CreateSub(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "MULTASSIGN") {
+                    Value * tmp = Builder->CreateMul(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "DIVASSIGN") {
+                    Value * tmp = Builder->CreateSDiv(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "MODASSIGN") {
+                    Value * tmp = Builder->CreateSRem(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+            }
+            else {
+                if(*op == "PLUSASSIGN") {
+                    Value * tmp = Builder->CreateFAdd(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "MINUSASSIGN") {
+                    Value * tmp = Builder->CreateFSub(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "MULTASSIGN") {
+                    Value * tmp = Builder->CreateFMul(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "DIVASSIGN") {
+                    Value * tmp = Builder->CreateFDiv(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+                else if(*op == "MODASSIGN") {
+                    Value * tmp = Builder->CreateFRem(variable, result);
+                    Builder->CreateStore(tmp, variable);
+                }
+            }
+        }
     }
 }
 
@@ -518,12 +609,34 @@ void ExpressionNode::printNode(int layer) {
 
 Value * VarNode::codeGen() {
     if(arrayPost == nullptr)
-        for(auto it = varTable.rbegin(); it != varTable.rend(); it++) {
+        for(auto it = varTable.rbegin(); it != varTable.rend(); it++)
             if((*it).count(*id) > 0)
-                return (*it)[*id];
-        }
+                return (*it)[*id].first;
     else {
-
+        Value * array;
+        vector<int> size;
+        for(auto it = varTable.rbegin(); it != varTable.rend(); it++)
+            if((*it).count(*id) > 0) {
+                array = (*it)[*id].first;
+                size = (*it)[*id].second;
+                break;
+            }
+        if(arrayPost->size() != size.size()) {
+            // Error !
+        }
+        for(int i = 0; i < size.size(); i++)
+            if(arrayPost->at(i) >= size[i]) {
+                // Error !
+            }
+        vector<int> products(size.size() + 1);
+        products[size.size()] = 1;
+        for(int i = size.size() - 1; i >= 0; i--)
+            products[i] = products[i+1] * size[i];
+        products[size.size()] = 0;
+        int ind = 0;
+        for(int i = size.size() - 1; i >= 0; i--)
+            ind = ind * products[i+1] + products[i];
+        return Builder->CreateGEP(array, ConstantInt::get(*TheContext, APInt(ind, 32)));
     }
 }
 
@@ -547,19 +660,151 @@ void VarNode::printNode(int layer) {
 }
 
 Value * OperandNode::codeGen() {
-    // if(single != nullptr) {
-    //     if(*op == "MINUS")
-    //         if(single->floatNode != nullptr)
-    //             return Builder->CreateFNeg(single->codeGen());
-    //         else
-    //             return Builder->CreateNeg(single->codeGen());
-    //     else if(*op == "LNOT")
-    //         return Builder->CreateNot(single->codeGen());
-    //     else if(*op == "BNOT")
-    //         return Builder->CreateNot(single->codeGen());   /////////////////////////////////////////////
+    if(rhs == nullptr && single == nullptr) {
+        Value * result = lhs->codeGen();
+        if(op == nullptr)
+            return result;
+        else if(*op == "MINUS")
+            if(result->getType() == Type::getFloatTy(*TheContext))
+                return Builder->CreateFNeg(result);
+            else
+                return Builder->CreateNeg(result);
+        else if(*op == "BNOT")
+            return Builder->CreateNot(result);
+        else if(*op == "LNOT")
+            if(result->getType() == Type::getFloatTy(*TheContext))
+                return Builder->CreateFCmpONE(result, ConstantFP::get(*TheContext, APFloat(0.0)));
+            else
+                return Builder->CreateICmpNE(result, ConstantInt::getBool(*TheContext, false));
+    }
+    else if(single != nullptr) {
+        Value * result = single->codeGen();
+        if(op == nullptr)
+            return result;
+        else if(*op == "MINUS")
+            if(result->getType() == Type::getFloatTy(*TheContext))
+                return Builder->CreateFNeg(result);
+            else
+                return Builder->CreateNeg(result);
+        else if(*op == "BNOT")
+            return Builder->CreateNot(result);
+        else if(*op == "LNOT")
+            if(result->getType() == Type::getFloatTy(*TheContext))
+                return Builder->CreateFCmpONE(result, ConstantFP::get(*TheContext, APFloat(0.0)));
+            else
+                return Builder->CreateICmpNE(result, ConstantInt::getBool(*TheContext, false));
         
-    // }
-    // else if()
+    }
+    else {
+        Value * left = lhs->codeGen();
+        Value * right = lhs->codeGen();
+        if(left->getType() != right->getType()) {
+            if(type2int(left->getType()) > type2int(right->getType()))
+                right = Builder->CreateIntCast(right, left->getType(), true);
+            else if(type2int(right->getType()) > type2int(left->getType()))
+                left = Builder->CreateIntCast(left, right->getType(), true);
+        }
+        if(*op == "BOR") {
+            return Builder->CreateOr(left, right);
+        }
+        else if(*op == "BAND") {
+            return Builder->CreateAnd(left, right);
+        }
+        else if(*op == "SL") {
+            return Builder->CreateShl(left, right);
+        }
+        else if(*op == "SR") {
+            return Builder->CreateAShr(left, right);
+        }
+        else if(left->getType() != Type::getFloatTy(*TheContext)) {
+            if(*op == "LOR") {
+                Value * tmp = Builder->CreateOr(left, right);
+                return Builder->CreateICmpNE(tmp, ConstantInt::getBool(*TheContext, false));
+            }
+            else if(*op == "LAND") {
+                Value * leftTrue = Builder->CreateICmpNE(left, ConstantInt::getBool(*TheContext, false));
+                Value * rightTrue = Builder->CreateICmpNE(right, ConstantInt::getBool(*TheContext, false));
+                return Builder->CreateAnd(leftTrue, rightTrue);
+            }
+            else if(*op == "EQ") {
+                return Builder->CreateICmpEQ(left, right);
+            }
+            else if(*op == "NEQ") {
+                return Builder->CreateICmpNE(left, right);
+            }
+            else if(*op == "LT") {
+                return Builder->CreateICmpSLT(left, right);
+            }
+            else if(*op == "GT") {
+                return Builder->CreateICmpSGT(left, right);
+            }
+            else if(*op == "LTE") {
+                return Builder->CreateICmpSLE(left, right);
+            }
+            else if(*op == "GTE") {
+                return Builder->CreateICmpSGE(left, right);
+            }
+            else if(*op == "PLUS") {
+                return Builder->CreateAdd(left, right);
+            }
+            else if(*op == "MINUS") {
+                return Builder->CreateSub(left, right);
+            }
+            else if(*op == "MULT") {
+                return Builder->CreateMul(left, right);
+            }
+            else if(*op == "DIV") {
+                return Builder->CreateSDiv(left, right);
+            }
+            else if(*op == "MOD") {
+                return Builder->CreateSRem(left, right);
+            }
+        }
+        else {
+            if(*op == "LOR") {
+                Value * tmp = Builder->CreateOr(left, right);
+                return Builder->CreateFCmpONE(tmp, ConstantInt::getBool(*TheContext, false));
+            }
+            else if(*op == "LAND") {
+                Value * leftTrue = Builder->CreateFCmpONE(left, ConstantInt::getBool(*TheContext, false));
+                Value * rightTrue = Builder->CreateFCmpONE(right, ConstantInt::getBool(*TheContext, false));
+                return Builder->CreateAnd(leftTrue, rightTrue);
+            }
+            else if(*op == "EQ") {
+                return Builder->CreateFCmpOEQ(left, right);
+            }
+            else if(*op == "NEQ") {
+                return Builder->CreateFCmpONE(left, right);
+            }
+            else if(*op == "LT") {
+                return Builder->CreateFCmpOLT(left, right);
+            }
+            else if(*op == "GT") {
+                return Builder->CreateFCmpOGT(left, right);
+            }
+            else if(*op == "LTE") {
+                return Builder->CreateFCmpOLE(left, right);
+            }
+            else if(*op == "GTE") {
+                return Builder->CreateFCmpOGE(left, right);
+            }
+            else if(*op == "PLUS") {
+                return Builder->CreateFAdd(left, right);
+            }
+            else if(*op == "MINUS") {
+                return Builder->CreateFSub(left, right);
+            }
+            else if(*op == "MULT") {
+                return Builder->CreateFMul(left, right);
+            }
+            else if(*op == "DIV") {
+                return Builder->CreateFDiv(left, right);
+            }
+            else if(*op == "MOD") {
+                return Builder->CreateFRem(left, right);
+            }
+        }
+    }
 }
 
 void OperandNode::printNode(int layer) {
@@ -692,7 +937,7 @@ void BoolNode::printNode(int layer) {
 }
 
 int main() {
-    varTable.push_back(map<string, Value *>());
+    varTable.push_back(map<string, pair<Value *, vector<int> > > ());
     yyparse();
     cout << "Program" << endl;
     for(auto p : *root) {
