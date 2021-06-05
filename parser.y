@@ -189,22 +189,6 @@ arrayPost:          LB INT RB  {
                     }
                     ;
 
-// arrayInitList:      arrayInitList COMMA arrayInit {
-//                         $1->push_back($3);
-//                         $$ = $1;
-//                     }
-//                     | arrayInit {
-//                         $$ = new vector<ArrayInitListNode*>();
-//                         $$->push_back($1);
-//                     }
-//                     | arrayConstList {
-//                         $$ = new vector<ArrayInitListNode*>();
-//                         $$->push_back(new ArrayInitListNode($1, true));
-//                     }
-//                     ;
-
-// arrayInit:          LC arrayInitList RC { new ArrayInitListNode($2, false); };
-
 arrayConstList:     arrayConstList COMMA single {
                         $1->push_back($3);
                         $$ = $1;
@@ -410,30 +394,3 @@ void yyerror(std::string s) {
     fprintf(stderr, "%s\n", s.c_str());
     return ;
 }
-
-/*maybe use the following？：*/
-int TypeCheck(char* type)
-{
-    if (!strcmp(type,"int"))
-	{
-		return INT;
-	}
-	if (!strcmp(type,"float"))
-	{
-		return FLOAT;
-	}
-	if (!strcmp(type,"char"))
-	{
-		return CHAR;
-	}
-}
-
-// #include<stdarg.h>
-// void yyerror(const char* fmt, ...)
-// {
-//     va_list ap;
-//     va_start(ap, fmt);
-//     fprintf(stderr, "Grammar Error at Line %d Column %d: ", yylloc.first_line,yylloc.first_column);
-//     vfprintf(stderr, fmt, ap);
-//     fprintf(stderr, ".\n");
-// }

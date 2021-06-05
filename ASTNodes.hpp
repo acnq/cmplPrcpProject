@@ -83,12 +83,6 @@ public:
     void printNode(int layer);
 };
 
-// class ArrayInitListNode : public Node {
-// public:
-//     ArrayInitListNode();
-//     Value * codeGen();
-// };
-
 class FunDeclarationNode : public Node {
 public:
     string *baseType;
@@ -114,14 +108,14 @@ class ParamNode : public Node {
 public:
     string *baseType;
     string *id;
-    vector<int> *arrayPostParam;
+    vector<int> *arrayPost;
 
     ParamNode() {};
     ParamNode(
         string *baseType,
         string *id,
-        vector<int> *arrayPostParam
-    ):baseType(baseType), id(id), arrayPostParam(arrayPostParam) {};
+        vector<int> *arrayPost
+    ):baseType(baseType), id(id), arrayPost(arrayPost) {};
 
     Value * codeGen();
     void printNode(int layer);

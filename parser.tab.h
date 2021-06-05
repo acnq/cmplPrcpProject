@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.6.  */
+/* A Bison parser, made by GNU Bison 3.5.1.  */
 
 /* Bison interface for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -31,9 +31,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
-   especially those whose name start with YY_ or yy_.  They are
-   private implementation details that can be changed or removed.  */
+/* Undocumented macros, especially those whose name start with YY_,
+   are private implementation details.  Do not rely on them.  */
 
 #ifndef YY_YY_PARSER_TAB_H_INCLUDED
 # define YY_YY_PARSER_TAB_H_INCLUDED
@@ -45,76 +44,71 @@
 extern int yydebug;
 #endif
 
-/* Token kinds.  */
+/* Token type.  */
 #ifndef YYTOKENTYPE
 # define YYTOKENTYPE
   enum yytokentype
   {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    INT = 258,                     /* INT  */
-    FLOAT = 259,                   /* FLOAT  */
-    TRUE = 260,                    /* TRUE  */
-    FALSE = 261,                   /* FALSE  */
-    CHAR = 262,                    /* CHAR  */
-    ID = 263,                      /* ID  */
-    IF = 264,                      /* IF  */
-    ELSE = 265,                    /* ELSE  */
-    WHILE = 266,                   /* WHILE  */
-    RETURN = 267,                  /* RETURN  */
-    FOR = 268,                     /* FOR  */
-    INT_TYPE = 269,                /* INT_TYPE  */
-    VOID_TYPE = 270,               /* VOID_TYPE  */
-    DOUBLE_TYPE = 271,             /* DOUBLE_TYPE  */
-    FLOAT_TYPE = 272,              /* FLOAT_TYPE  */
-    CHAR_TYPE = 273,               /* CHAR_TYPE  */
-    BOOL_TYPE = 274,               /* BOOL_TYPE  */
-    EXTERN_TYPE = 275,             /* EXTERN_TYPE  */
-    LP = 276,                      /* LP  */
-    RP = 277,                      /* RP  */
-    LC = 278,                      /* LC  */
-    RC = 279,                      /* RC  */
-    LB = 280,                      /* LB  */
-    RB = 281,                      /* RB  */
-    SEMICOLON = 282,               /* SEMICOLON  */
-    COMMA = 283,                   /* COMMA  */
-    ASSIGN = 284,                  /* ASSIGN  */
-    PLUSASSIGN = 285,              /* PLUSASSIGN  */
-    MINUSASSIGN = 286,             /* MINUSASSIGN  */
-    MULTASSIGN = 287,              /* MULTASSIGN  */
-    DIVASSIGN = 288,               /* DIVASSIGN  */
-    MODASSIGN = 289,               /* MODASSIGN  */
-    BORASSIGN = 290,               /* BORASSIGN  */
-    BXORASSIGN = 291,              /* BXORASSIGN  */
-    BANDASSIGN = 292,              /* BANDASSIGN  */
-    SRASSIGN = 293,                /* SRASSIGN  */
-    SLASSIGN = 294,                /* SLASSIGN  */
-    LOR = 295,                     /* LOR  */
-    LAND = 296,                    /* LAND  */
-    BOR = 297,                     /* BOR  */
-    BAND = 298,                    /* BAND  */
-    BXOR = 299,                    /* BXOR  */
-    SR = 300,                      /* SR  */
-    SL = 301,                      /* SL  */
-    PLUS = 302,                    /* PLUS  */
-    MINUS = 303,                   /* MINUS  */
-    MULT = 304,                    /* MULT  */
-    DIV = 305,                     /* DIV  */
-    MOD = 306,                     /* MOD  */
-    LNOT = 307,                    /* LNOT  */
-    BNOT = 308,                    /* BNOT  */
-    INCR = 309,                    /* INCR  */
-    DECR = 310,                    /* DECR  */
-    EQ = 311,                      /* EQ  */
-    NEQ = 312,                     /* NEQ  */
-    LT = 313,                      /* LT  */
-    GT = 314,                      /* GT  */
-    LTE = 315,                     /* LTE  */
-    GTE = 316                      /* GTE  */
+    INT = 258,
+    FLOAT = 259,
+    TRUE = 260,
+    FALSE = 261,
+    CHAR = 262,
+    ID = 263,
+    IF = 264,
+    ELSE = 265,
+    WHILE = 266,
+    RETURN = 267,
+    FOR = 268,
+    INT_TYPE = 269,
+    VOID_TYPE = 270,
+    DOUBLE_TYPE = 271,
+    FLOAT_TYPE = 272,
+    CHAR_TYPE = 273,
+    BOOL_TYPE = 274,
+    EXTERN_TYPE = 275,
+    LP = 276,
+    RP = 277,
+    LC = 278,
+    RC = 279,
+    LB = 280,
+    RB = 281,
+    SEMICOLON = 282,
+    COMMA = 283,
+    ASSIGN = 284,
+    PLUSASSIGN = 285,
+    MINUSASSIGN = 286,
+    MULTASSIGN = 287,
+    DIVASSIGN = 288,
+    MODASSIGN = 289,
+    BORASSIGN = 290,
+    BXORASSIGN = 291,
+    BANDASSIGN = 292,
+    SRASSIGN = 293,
+    SLASSIGN = 294,
+    LOR = 295,
+    LAND = 296,
+    BOR = 297,
+    BAND = 298,
+    BXOR = 299,
+    SR = 300,
+    SL = 301,
+    PLUS = 302,
+    MINUS = 303,
+    MULT = 304,
+    DIV = 305,
+    MOD = 306,
+    LNOT = 307,
+    BNOT = 308,
+    INCR = 309,
+    DECR = 310,
+    EQ = 311,
+    NEQ = 312,
+    LT = 313,
+    GT = 314,
+    LTE = 315,
+    GTE = 316
   };
-  typedef enum yytokentype yytoken_kind_t;
 #endif
 
 /* Value type.  */
@@ -159,7 +153,7 @@ union YYSTYPE
     char type_id[32];
 
 
-#line 163 "parser.tab.h"
+#line 157 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
