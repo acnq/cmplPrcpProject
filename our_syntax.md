@@ -1,47 +1,56 @@
+# our syntax
+
 1. *program $\rightarrow$ declaration-list*
 2. *declaration-list* $\rightarrow$ *declaration-list* *declaration* | *declaration*
 3. *declaration* $\rightarrow$ *var-declaration* | *fun-declaration*
-4. *var-declaration* $\rightarrow$ *type-specifier* **ID** **;** | *base_type* **ID** **=** *expression* **;** | *array-type* **ID ** = **{**  *array-init-list* **}** **;**
-5. *type-specifier* $\rightarrow$ *base-type* | *array-type*
-6. *array-type* $\rightarrow$ *base-type* **[**  **NUM** **]** |   *array-type* **[** **NUM** **]**    <!-- 我们不支持定义数组的时候方括号内含有表达式 --> <!--支持多维数组-->
-7. *array-init-list* $\rightarrow$  *array-init-list* **,**  *array-init* | *array-init*
-8. *array-init* $\rightarrow$ **{** *array-init-list* **}** | **NUM** <!--注意这里要有方法判断括号的嵌套-->
-9. *base_type* $\rightarrow$ **int** | **void** | **double**  |  **float** | **char** | **bool**
-10. *fun-declaration* $\rightarrow$ *type-specifier* **ID** **(**  *params* **)** *compound-stmt* |      **extern**  *type-specifier* **ID** **(**  *params* **)**  <!--这里实现了extern函数-->
-11. *params* $\rightarrow$ *param-list* | **void**
-12. *param-list* $\rightarrow$ *param-list* **,** *param* | *param*
-13. *param* $\rightarrow$ *type-specifier* **ID** | *type-specifier* **ID** **[   ]**
-14. *compound-stmt* $\rightarrow$ **{** *local-declarations  statement-list* **}**
-15. *local-declarations* $\rightarrow$ *local-declarations* *var-declaration* | $\boldsymbol{\epsilon}$
-16. *statement-list* $\rightarrow$ *statement-list* *statement* | $\boldsymbol{\epsilon}$
-17. *statement* $\rightarrow$ *expression-stmt* | *compound-stmt* | *selection-stmt* | *iteration-stmt* | *return-stmt*
-18. *expression-stmt*  $\rightarrow$  *expression* **;** | **;**
-19. *selection-stmt* $\rightarrow$ **if** **(** *expression* **)** *statement* | **if** **(** *expression* **)** *statement* **else** *statement*
-20. *iteration-stmt* $\rightarrow$  *while-stmt* | *for-stmt*
-21. *while-stmt* $\rightarrow$ **while** **(** *expression* **)** *statement*
-22. *for-stmt* $\rightarrow$  **for** **(** *expression* **;**  *expression* **;** *expression* **)** *statement*
-23. *return-stmt* $\rightarrow$ **return ;** | **return** *expression* **;**
-24. *expression* $\rightarrow$ *var*    *assop*    *expression* | *simple-expression*
-25. *assop* $\rightarrow$ **=** | **+=** | **-=** | **\*=** | **/=**| **%=**|**^=** | **&=** | **|=** | **<<=** | **>>=**
-26. *var* $\rightarrow$ **ID** | **ID** **[** *expression*  **]**
-27. *simple-expression* $\rightarrow$ *simple-expression* *logop* *logic-expression* | *logic-expression*
-28. *logop* $\rightarrow$ **||** | **&&**
-29. *logic-expression* $\rightarrow$ *logic-expression* *bitop* *bit-expression* | *bit-expression*
-30. *bitop* $\rightarrow$ **|** | **^** | **&**
-31. *bit-expression* $\rightarrow$ *bit-expression* *relop* *shift-expression* | *shift-expression*
-32. *relop* $\rightarrow$ **<=** | **<** | **>** | **>=** | **==** | **!=**
-33. *shift-expression* $\rightarrow$ *shift-expression* *shiop* *additive-expression* | *additive-expression*
-34. *shiop*$\rightarrow$ **<<** | **>>**
-35. *additive-expression* $\rightarrow$ *additive-expression* *addop* *term* | *term*
-36. *addop* $\rightarrow$ **+**|**-**
-37. *term* $\rightarrow$ *term* *mulop* *factor* | *factor*
-38. *mulop* $\rightarrow$ **\***| **/** | **%**
-39. *factor* $\rightarrow$ **!** *factor* | **~** *factor* | **-** *factor* | *incre*
-40. *incre* $\rightarrow$ *incre* **--** | *incre* **++** | *terminal* <!--去掉前缀++和前缀--，后缀的++和--优先级高于‘！-~’,感觉按照yacc的最长字符匹配原则，40和39应该不会有冲突-->
-41. *terminal* $\rightarrow$ **(** *expression* **)** | *var* | *call* | **NUM**| **DOUBLE** | **CHAR** | **TURE** |  **FALSE**<!--注意进行表达式的类型匹配，char表示字符-->
-42. *call* $\rightarrow$ **ID** **(** *args* **)**
-43. *args* $\rightarrow$ *arg-list* | $\boldsymbol{\epsilon}$
-44. *arg-list* $\rightarrow$ *arg-list*    **,**    *expression* | *expression*
+4. *var-declaration* $\rightarrow$ *base-type* *id-list* **;** | *base-type* **ID** *array-post* **;** | *base-type* **ID** *array-post* **=** **{** *array-const-list* **}**  **;**
+5. *id-list* $\rightarrow$ *id-list* **,** **ID** | *id-list* **,** **ID** **=**  *expression* | **ID** | **ID** **=** *expression*
+6. *array-const-list* $\rightarrow$ *array-const-list* **,** *single* | *single*
+7. *base_type* $\rightarrow$ **int** |  **double**  |  **float** | **char** | **bool**
+8. *fun-declaration* $\rightarrow$ *base-type* **ID** **(**  *params* **)** *compound-stmt* |  **void**    **ID** **(**  *params* **)** *compound-stmt*  | **extern**  *base-type* **ID** **(**  *params* **)** | **extern**  **void** **ID** **(**  *params* **)**  <!--这里实现了extern函数-->
+9. *params* $\rightarrow$ *param-list* | **void**
+10. *param-list* $\rightarrow$ *param-list* **,** *param* | *param*
+11. *param* $\rightarrow$ *base-type* **ID** | *base-type* **ID** *array-post-param*
+12. *array-post-param* $\rightarrow$  **[** **]** | **[** **NUM** **]** | *array-post-param* **[** **NUM** **]**
+13. *compound-stmt* $\rightarrow$ **{** *local-declarations  statement-list* **}** | **{** *local-declarations* **}** |   **{** *statement-list* **}** | **{** **}**
+14. *local-declarations* $\rightarrow$ *local-declarations* *var-declaration* | *var-declaration*
+15. *statement-list* $\rightarrow$ *statement-list* *statement* | *statement*
+16. *statement* $\rightarrow$ *expression-stmt* | *compound-stmt* | *selection-stmt* | *iteration-stmt* | *return-stmt*
+17. *expression-stmt*  $\rightarrow$  *expression* **;** | **;**
+18. *selection-stmt* $\rightarrow$ **if** **(** *expression* **)** *statement* | **if** **(** *expression* **)** *statement* **else** *statement*
+19. *iteration-stmt* $\rightarrow$  *while-stmt* | *for-stmt*
+20. *while-stmt* $\rightarrow$ **while** **(** *expression* **)** *statement*
+21. *for-stmt* $\rightarrow$  **for** **(** *expression* **;**  *expression* **;** *expression* **)** *statement*
+22. *return-stmt* $\rightarrow$ **return ;** | **return** *expression* **;**
+23. *expression* $\rightarrow$ *var*    *assop*    *expression* | *operand*
+24. *assop* $\rightarrow$ **=** | **+=** | **-=** | **\*=** | **/=**| **%=**|**^=** | **&=** | **|=** | **<<=** | **>>=**
+25. ==*var* $\rightarrow$ **ID** | **ID** **[** *expression*  **]**== 注意修改
+26. *operand* $\rightarrow$ *operand* **||** *operand* | *operand* **&&** *operand* | *operand* **|** *operand* |*operand* **^** *operand* | *operand* **&** *operand* | *operand* **=** *operand* | *operand* **!=** *operand*| *operand* **<** *operand* | *operand* **>** *operand* | *operand* **<=** *operand* | *operand* **>=** *operand*  | *operand* **<<** *operand* | *operand* **>>** *operand* | *operand* **+** *operand*  | *operand* **-** *operand* | *operand* **\*** *operand* | *operand* **/** *operand* | *operand* **%** *operand* | *prefix* **(** *operand* **)** | **(** *operand* **)** | *prefix* *single* | *single*
+27. *prefix* $\rightarrow$ **!** | **~** | **-**
+28. *single* $\rightarrow$ *var* | *call* | **NUM**| **DOUBLE** | **CHAR** | **TURE** |  **FALSE**
+29. *call* $\rightarrow$ **ID** **(** *args* **)**
+30. *args* $\rightarrow$ *arg-list* | $\boldsymbol{\epsilon}$
+31. *arg-list* $\rightarrow$ *arg-list*    **,**    *expression* | *expression*
+
+以下下均为注释：
+
+<!-- 26. *simple-expression* $\rightarrow$ *simple-expression* *logop* *logic-expression* | *logic-expression*
+
+27. *logop* $\rightarrow$ **||** | **&&**
+28. *logic-expression* $\rightarrow$ *logic-expression* *bitop* *bit-expression* | *bit-expression*
+29. *bitop* $\rightarrow$ **|** | **^** | **&**
+30. *bit-expression* $\rightarrow$ *bit-expression* *relop* *shift-expression* | *shift-expression*
+31. *relop* $\rightarrow$ **<=** | **<** | **>** | **>=** | **==** | **!=**
+32. *shift-expression* $\rightarrow$ *shift-expression* *shiop* *additive-expression* | *additive-expression*
+33. *shiop*$\rightarrow$ **<<** | **>>**
+34. *additive-expression* $\rightarrow$ *additive-expression* *addop* *term* | *term*
+35. *addop* $\rightarrow$ **+**|**-**
+36. *term* $\rightarrow$ *term* *mulop* *factor* | *factor*
+37. *mulop* $\rightarrow$ **\***| **/** | **%**
+38. *factor* $\rightarrow$ **!** *factor* | **~** *factor* | **-** *factor* | *incre*
+39. *incre* $\rightarrow$ *incre* **--** | *incre* **++** | *terminal* 去掉前缀++和前缀--，后缀的++和--优先级高于‘！-~’,感觉按照yacc的最长字符匹配原则，40和39应该不会有冲突 
+
+40. *terminal* $\rightarrow$ **(** *expression* **)** | *var* | *call* | **NUM**| **DOUBLE** | **CHAR** | **TURE** |  **FALSE**-->
 
 <!-- 使用yacc的话，左递归优于右递归 -->
 
