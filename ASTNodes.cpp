@@ -4,15 +4,11 @@
 #include <string>
 #include "ASTNodes.hpp"
 
-DeclarationNode::DeclarationNode() {
-
-}
-
 Value * DeclarationNode::codeGen() {
 
 }
 
-VarDeclarationNode::VarDeclarationNode() {
+void DeclarationNode::printNode(void) {
 
 }
 
@@ -20,7 +16,7 @@ Value * VarDeclarationNode::codeGen() {
 
 }
 
-IdListNode::IdListNode() {
+void VarDeclarationNode::printNode(void) {
 
 }
 
@@ -28,23 +24,15 @@ Value * IdListNode::codeGen() {
 
 }
 
-// ArrayInitListNode::ArrayInitListNode() {
-
-// }
-
-// Value * ArrayInitListNode::codeGen() {
-
-// }
-
-FunDeclarationNode::FunDeclarationNode() {
+void IdListNode::printNode(void) {
 
 }
 
 Value * FunDeclarationNode::codeGen() {
-    int a[2][2] = { {3, 4}, {4, 8} };
+
 }
 
-ParamNode::ParamNode() {
+void FunDeclarationNode::printNode(void) {
 
 }
 
@@ -52,7 +40,7 @@ Value * ParamNode::codeGen() {
 
 }
 
-CompoundStmtNode::CompoundStmtNode() {
+void ParamNode::printNode(void) {
 
 }
 
@@ -60,7 +48,7 @@ Value * CompoundStmtNode::codeGen() {
 
 }
 
-StatementNode::StatementNode() {
+void CompoundStmtNode::printNode(void) {
 
 }
 
@@ -68,7 +56,7 @@ Value * StatementNode::codeGen() {
 
 }
 
-SelectionStmtNode::SelectionStmtNode() {
+void StatementNode::printNode(void) {
 
 }
 
@@ -76,7 +64,7 @@ Value * SelectionStmtNode::codeGen() {
 
 }
 
-IterationStmtNode::IterationStmtNode() {
+void SelectionStmtNode::printNode(void) {
 
 }
 
@@ -84,7 +72,7 @@ Value * IterationStmtNode::codeGen() {
 
 }
 
-WhileStmtNode::WhileStmtNode() {
+void IterationStmtNode::printNode(void) {
 
 }
 
@@ -92,7 +80,7 @@ Value * WhileStmtNode::codeGen() {
 
 }
 
-ForStmtNode::ForStmtNode() {
+void WhileStmtNode::printNode(void) {
 
 }
 
@@ -100,7 +88,7 @@ Value * ForStmtNode::codeGen() {
 
 }
 
-ReturnStmtNode::ReturnStmtNode() {
+void ForStmtNode::printNode(void) {
 
 }
 
@@ -108,7 +96,7 @@ Value * ReturnStmtNode::codeGen() {
 
 }
 
-ExpressionNode::ExpressionNode() {
+void ReturnStmtNode::printNode(void) {
 
 }
 
@@ -116,7 +104,7 @@ Value * ExpressionNode::codeGen() {
 
 }
 
-VarNode::VarNode() {
+void ExpressionNode::printNode(void) {
 
 }
 
@@ -124,7 +112,7 @@ Value * VarNode::codeGen() {
 
 }
 
-OperandNode::OperandNode() {
+void VarNode::printNode(void) {
 
 }
 
@@ -132,7 +120,7 @@ Value * OperandNode::codeGen() {
 
 }
 
-SingleNode::SingleNode() {
+void OperandNode::printNode(void) {
 
 }
 
@@ -140,10 +128,46 @@ Value * SingleNode::codeGen() {
 
 }
 
-CallNode::CallNode() {
+void SingleNode::printNode(void) {
 
 }
 
 Value * CallNode::codeGen() {
+
+}
+
+void CallNode::printNode(void) {
+
+}
+
+Value * IntNode::codeGen() {
+
+}
+
+void IntNode::printNode(void) {
+
+}
+
+Value * FloatNode::codeGen() {
+
+}
+
+void FloatNode::printNode(void) {
+
+}
+
+Value * CharNode::codeGen() {
+
+}
+
+void CharNode::printNode(void) {
+
+}
+
+Value * BoolNode::codeGen() {
+
+}
+
+void BoolNode::printNode(void) {
 
 }

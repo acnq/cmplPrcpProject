@@ -337,7 +337,7 @@ assop:              ASSIGN { $$ = make_unique<string>($1); }
                     ;
 
 var:                ID { $$ = make_unique<VarNode>(make_unique<string>($1), nullptr); }
-                    | ID LB expression RB { $$ = make_unique<VarNode>(make_unique<string>($1), move($3)); }
+                    | ID arrayPost { $$ = make_unique<VarNode>(make_unique<string>($1), move($2)); }
                     ;
 
 operand:            operand LOR operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
