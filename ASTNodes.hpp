@@ -1,7 +1,25 @@
 #include <iostream>
 #include <vector>
-#include <llvm/IR/Value.h> 
 #include <string>
+
+#include "llvm/IR/BasicBlock.h"
+#include "llvm/IR/Constants.h"
+#include "llvm/IR/DerivedTypes.h"
+#include "llvm/IR/Function.h"
+#include "llvm/IR/IRBuilder.h"
+#include "llvm/IR/Instructions.h"
+#include "llvm/IR/LLVMContext.h"
+#include "llvm/IR/LegacyPassManager.h"
+#include "llvm/IR/Module.h"
+#include "llvm/IR/Type.h"
+#include "llvm/IR/Value.h" 
+#include "llvm/IR/Verifier.h"
+#include "llvm/Support/TargetSelect.h"
+#include "llvm/Target/TargetMachine.h"
+#include "llvm/Transforms/InstCombine/InstCombine.h"
+#include "llvm/Transforms/Scalar.h"
+#include "llvm/Transforms/Scalar/GVN.h"
+#include "llvm/Transforms/Utils.h"
 
 using namespace std;
 using namespace llvm;
@@ -13,6 +31,7 @@ class IdListNode;
 class FunDeclarationNode;
 class ParamNode;
 class CompoundStmtNode;
+class FunctionBodyNode;
 class StatementNode;
 class SelectionStmtNode;
 class IterationStmtNode;
@@ -31,9 +50,9 @@ class BoolNode;
 
 class Node {
 public:
-    virtual ~Node() = default;
-    virtual Value * codeGen() = 0;
-    virtual void printNode(int layer) = 0;
+    ~Node() = default;
+    Value * codeGen();
+    void printNode(int layer);
 };
 
 class DeclarationNode : public Node {
@@ -88,7 +107,7 @@ public:
     string *baseType;
     string *id;
     vector<ParamNode*> *params;
-    CompoundStmtNode *compoundStmt;
+    FunctionBodyNode *functionBody;
     bool isExtern;
 
     FunDeclarationNode() {};
@@ -96,9 +115,9 @@ public:
         string *baseType,
         string *id,
         vector<ParamNode*> *params,
-        CompoundStmtNode *compoundStmt,
+        FunctionBodyNode *functionBody,
         bool isExtern
-    ):baseType(baseType), id(id), params(params), compoundStmt(compoundStmt), isExtern(isExtern) {};
+    ):baseType(baseType), id(id), params(params), functionBody(functionBody), isExtern(isExtern) {};
 
     Value * codeGen();
     void printNode(int layer);
@@ -118,6 +137,21 @@ public:
     ):baseType(baseType), id(id), arrayPost(arrayPost) {};
 
     Value * codeGen();
+    void printNode(int layer);
+};
+
+class FunctionBodyNode : public Node {
+public:
+    vector<VarDeclarationNode*> *localDeclarations;
+    vector<StatementNode*> *statementList;
+
+    FunctionBodyNode() {};
+    FunctionBodyNode(
+        vector<VarDeclarationNode*> *localDeclarations,
+        vector<StatementNode*> *statementList
+    ):localDeclarations(localDeclarations), statementList(statementList) {};
+    
+    Value * codeGen(BasicBlock * afterBlock);
     void printNode(int layer);
 };
 

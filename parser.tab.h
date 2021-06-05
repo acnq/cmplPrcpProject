@@ -122,6 +122,7 @@ union YYSTYPE
     FunDeclarationNode   *funDeclarationNode;
     ParamNode            *paramNode;
     CompoundStmtNode     *compoundStmtNode;
+    FunctionBodyNode     *functionBodyNode;
     StatementNode        *statementNode;
     SelectionStmtNode    *selectionStmtNode;
     IterationStmtNode    *iterationStmtNode;
@@ -153,7 +154,7 @@ union YYSTYPE
     char type_id[32];
 
 
-#line 157 "parser.tab.h"
+#line 158 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

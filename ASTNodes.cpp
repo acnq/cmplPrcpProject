@@ -3,30 +3,16 @@
 #include <map>
 #include <string>
 #include "ASTNodes.hpp"
+#include "parser.tab.h"
 
-#include "llvm/IR/BasicBlock.h"
-#include "llvm/IR/Constants.h"
-#include "llvm/IR/DerivedTypes.h"
-#include "llvm/IR/Function.h"
-#include "llvm/IR/IRBuilder.h"
-#include "llvm/IR/Instructions.h"
-#include "llvm/IR/LLVMContext.h"
-#include "llvm/IR/LegacyPassManager.h"
-#include "llvm/IR/Module.h"
-#include "llvm/IR/Type.h"
-#include "llvm/IR/Verifier.h"
-#include "llvm/Support/TargetSelect.h"
-#include "llvm/Target/TargetMachine.h"
-#include "llvm/Transforms/InstCombine/InstCombine.h"
-#include "llvm/Transforms/Scalar.h"
-#include "llvm/Transforms/Scalar/GVN.h"
-#include "llvm/Transforms/Utils.h"
+
+vector<DeclarationNode*> *root;
 
 static std::unique_ptr<LLVMContext> TheContext;
 static std::unique_ptr<Module> TheModule;
 static std::unique_ptr<IRBuilder<>> Builder;
 
-static vector<map<string, AllocaInst *> > varTable;
+static vector<map<string, Value *> > varTable;
 static map<string, Function *> funcTable;
 
 static AllocaInst *CreateEntryBlockAlloca(Function *func, Type * type, const string name) {
@@ -44,6 +30,8 @@ static Type * str2type(string str) {
         retType = Type::getInt32Ty(*TheContext);
     else if(str == "FLOAT_type")
         retType = Type::getFloatTy(*TheContext);
+    else if(str == "VOID_type")
+        retType = Type::getVoidTy(*TheContext);
 }
 
 void printPrefix(int layer) {
@@ -129,6 +117,10 @@ void VarDeclarationNode::printNode(int layer) {
     }
 }
 
+Value * IdListNode::codeGen() {
+
+}
+
 void IdListNode::printNode(int layer) {
     printPrefix(layer);
     cout << "IdList" << endl;
@@ -155,13 +147,26 @@ Value * FunDeclarationNode::codeGen() {
         else
             argTypes.push_back(str2type(*(param->baseType)));
     }
-    FunctionType * FT = FunctionType::get(str2type(*baseType), argTypes, false);    ///////// To do:检查多维数组形状
+    Type * thisType = (baseType == nullptr)? Type::getVoidTy(*TheContext) : str2type(*baseType);
+    FunctionType * FT = FunctionType::get(thisType, argTypes, false);    ///////// To do:检查多维数组形状
+
+    Function * context = Builder->GetInsertBlock()->getParent();
+    BasicBlock * afterBlock = BasicBlock::Create(*TheContext, "outOfFunction", context);
+    
     Function * F = Function::Create(FT, Function::ExternalLinkage, *id, TheModule.get());
+
+    varTable.push_back(map<string, Value *>());
+    BasicBlock * currBlock = BasicBlock::Create(*TheContext, "intoFunction", F);
+    Builder->SetInsertPoint(currBlock);
+
     funcTable[*id] = F;
     unsigned Idx = 0;
-    for (auto &Arg : F->args())
+    for (auto &Arg : F->args()) {
         Arg.setName(*(params->at(Idx++)->id));
-    return F;
+        varTable.back()[string(Arg.getName())] = &Arg;
+    }
+    if(!isExtern)
+        return functionBody->codeGen(afterBlock);
 }
 
 void FunDeclarationNode::printNode(int layer) {
@@ -187,9 +192,13 @@ void FunDeclarationNode::printNode(int layer) {
         }
     }
 
-    if(compoundStmt) {
-        compoundStmt->printNode(layer + 1);
+    if(functionBody) {
+        functionBody->printNode(layer + 1);
     }
+}
+
+Value * ParamNode::codeGen() {
+
 }
 
 void ParamNode::printNode(int layer) {
@@ -216,11 +225,48 @@ void ParamNode::printNode(int layer) {
     }
 }
 
-Value * CompoundStmtNode::codeGen() {
+Value * FunctionBodyNode::codeGen(BasicBlock * afterBlock) {
+    if(localDeclarations)
+        for(auto node : * localDeclarations)
+            node->codeGen();
+    if(statementList)
+        for(auto node : * statementList)
+            node->codeGen();
+    Builder->CreateBr(afterBlock);
+    Builder->SetInsertPoint(afterBlock);
+}
+
+void FunctionBodyNode::printNode(int layer) {
+    printPrefix(layer);
+    cout << "CompoundStmt" << endl;
+
     if(localDeclarations) {
-        for(auto varDecl : *localDeclarations)
-            varDecl->codeGen();
+        for (auto p : *localDeclarations) {
+            p->printNode(layer + 1);
+        }
     }
+
+    if(statementList) {
+        for (auto p : *statementList) {
+            p->printNode(layer + 1);
+        }
+    }
+}
+
+Value * CompoundStmtNode::codeGen() {
+    varTable.push_back(map<string, Value *>());
+    Function * context = Builder->GetInsertBlock()->getParent();
+    BasicBlock * currBlock = BasicBlock::Create(*TheContext, "intoBlock", context);
+    BasicBlock * afterBlock = BasicBlock::Create(*TheContext, "outOfBlock", context);
+    Builder->SetInsertPoint(currBlock);
+    if(localDeclarations)
+        for(auto node : * localDeclarations)
+            node->codeGen();
+    if(statementList)
+        for(auto node : * statementList)
+            node->codeGen();
+    Builder->CreateBr(afterBlock);
+    Builder->SetInsertPoint(afterBlock);
 }
 
 void CompoundStmtNode::printNode(int layer) {
@@ -241,7 +287,16 @@ void CompoundStmtNode::printNode(int layer) {
 }
 
 Value * StatementNode::codeGen() {
-
+    if(expNode != nullptr)
+        return expNode->codeGen();
+    else if(compNode != nullptr)
+        return compNode->codeGen();
+    else if(selNode != nullptr)
+        return selNode->codeGen();
+    else if(iterNode != nullptr)
+        return iterNode->codeGen();
+    else if(retNode != nullptr)
+        return retNode->codeGen();
 }
 
 void StatementNode::printNode(int layer) {
@@ -271,7 +326,36 @@ void StatementNode::printNode(int layer) {
 }
 
 Value * SelectionStmtNode::codeGen() {
+    Value * cond = condition->codeGen();
+    Function *TheFunction = Builder->GetInsertBlock()->getParent();
+    BasicBlock *ifBlock = BasicBlock::Create(*TheContext, "if", TheFunction);
+    BasicBlock *elseBlock = BasicBlock::Create(*TheContext, "else");
+    BasicBlock *afterBlock = BasicBlock::Create(*TheContext, "after");
 
+    Builder->CreateCondBr(cond, ifBlock, elseBlock);
+
+    Builder->SetInsertPoint(ifBlock);
+
+    Value *ifValue = ifPart->codeGen();
+
+    Builder->CreateBr(afterBlock);
+    afterBlock = Builder->GetInsertBlock();
+
+    TheFunction->getBasicBlockList().push_back(elseBlock);
+    Builder->SetInsertPoint(elseBlock);
+
+    Value *elseValue = elsePart->codeGen();
+
+    Builder->CreateBr(afterBlock);
+    elseBlock = Builder->GetInsertBlock();
+
+    TheFunction->getBasicBlockList().push_back(afterBlock);
+    Builder->SetInsertPoint(afterBlock);
+    PHINode *PN = Builder->CreatePHI(Type::getDoubleTy(*TheContext), 2, "iftmp");
+
+    PN->addIncoming(ifValue, ifBlock);
+    PN->addIncoming(elseValue, elseBlock);
+    return PN;
 }
 
 void SelectionStmtNode::printNode(int layer) {
@@ -292,7 +376,10 @@ void SelectionStmtNode::printNode(int layer) {
 }
 
 Value * IterationStmtNode::codeGen() {
-
+    if(whileNode)
+        return whileNode->codeGen();
+    else if(forNode)
+        return forNode->codeGen();
 }
 
 void IterationStmtNode::printNode(int layer) {
@@ -309,7 +396,22 @@ void IterationStmtNode::printNode(int layer) {
 }
 
 Value * WhileStmtNode::codeGen() {
+    Function *TheFunction = Builder->GetInsertBlock()->getParent();
+    BasicBlock *mainBlock = BasicBlock::Create(*TheContext, "whileLoop", TheFunction);
 
+    Builder->CreateBr(mainBlock);
+    Builder->SetInsertPoint(mainBlock);
+
+    Value * cond = condition->codeGen();
+    BasicBlock *afterBlock = BasicBlock::Create(*TheContext, "afterWhile", TheFunction);
+    Builder->CreateCondBr(cond, mainBlock, afterBlock);
+
+    statement->codeGen();
+
+    Builder->CreateBr(mainBlock);
+    Builder->SetInsertPoint(afterBlock);
+
+    return nullptr;
 }
 
 void WhileStmtNode::printNode(int layer) {
@@ -326,7 +428,24 @@ void WhileStmtNode::printNode(int layer) {
 }
 
 Value * ForStmtNode::codeGen() {
+    first->codeGen();
+    Function *TheFunction = Builder->GetInsertBlock()->getParent();
+    BasicBlock *mainBlock = BasicBlock::Create(*TheContext, "forLoop", TheFunction);
 
+    Builder->CreateBr(mainBlock);
+    Builder->SetInsertPoint(mainBlock);
+
+    Value * cond = second->codeGen();
+    BasicBlock *afterBlock = BasicBlock::Create(*TheContext, "afterFor", TheFunction);
+    Builder->CreateCondBr(cond, mainBlock, afterBlock);
+
+    statement->codeGen();
+    third->codeGen();
+
+    Builder->CreateBr(mainBlock);
+    Builder->SetInsertPoint(afterBlock);
+
+    return nullptr;
 }
 
 void ForStmtNode::printNode(int layer) {
@@ -351,7 +470,8 @@ void ForStmtNode::printNode(int layer) {
 }
 
 Value * ReturnStmtNode::codeGen() {
-
+    Value * ret = returnExp->codeGen();
+    return Builder->CreateRet(ret);
 }
 
 void ReturnStmtNode::printNode(int layer) {
@@ -364,7 +484,14 @@ void ReturnStmtNode::printNode(int layer) {
 }
 
 Value * ExpressionNode::codeGen() {
-
+    if(operand)
+        return operand->codeGen();
+    else {
+        // if(*op == "ASSIGN") {
+        //     Value * result = expression->codeGen();
+        //     Builder->CreateStore(result, )
+        // }
+    }
 }
 
 void ExpressionNode::printNode(int layer) {
@@ -390,7 +517,14 @@ void ExpressionNode::printNode(int layer) {
 }
 
 Value * VarNode::codeGen() {
+    if(arrayPost == nullptr)
+        for(auto it = varTable.rbegin(); it != varTable.rend(); it++) {
+            if((*it).count(*id) > 0)
+                return (*it)[*id];
+        }
+    else {
 
+    }
 }
 
 void VarNode::printNode(int layer) {
@@ -555,4 +689,14 @@ Value * BoolNode::codeGen() {
 void BoolNode::printNode(int layer) {
     printPrefix(layer);
     cout << "Bool: " << value << endl;
+}
+
+int main() {
+    varTable.push_back(map<string, Value *>());
+    yyparse();
+    cout << "Program" << endl;
+    for(auto p : *root) {
+        p->printNode(1);
+    }
+    return 0;
 }

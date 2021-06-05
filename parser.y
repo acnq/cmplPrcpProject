@@ -15,7 +15,7 @@ extern int yylineno;
 extern char* yytext;
 extern FILE* yyin;
 
-vector<DeclarationNode*> *root;
+extern vector<DeclarationNode*> *root;
 
 extern int yylex(void);
 
@@ -31,6 +31,7 @@ int typeCheck(char* type);/*类型检查*/
     FunDeclarationNode   *funDeclarationNode;
     ParamNode            *paramNode;
     CompoundStmtNode     *compoundStmtNode;
+    FunctionBodyNode     *functionBodyNode;
     StatementNode        *statementNode;
     SelectionStmtNode    *selectionStmtNode;
     IterationStmtNode    *iterationStmtNode;
@@ -84,6 +85,7 @@ int typeCheck(char* type);/*类型检查*/
 %type<funDeclarationNode>   funDeclaration
 %type<paramNode>            param
 %type<compoundStmtNode>     compoundStmt
+%type<functionBodyNode>     functionBody
 %type<statementNode>        statement
 %type<selectionStmtNode>    selectionStmt
 %type<iterationStmtNode>    iterationStmt
@@ -130,6 +132,7 @@ int typeCheck(char* type);/*类型检查*/
 %%
 
 program:            declarationList { root = $1; }
+                    | %empty
                     ;
 
 declarationList:    declarationList declaration  {
@@ -205,8 +208,8 @@ baseType:           INT_TYPE { $$ = new string("INT_TYPE"); }
                     | BOOL_TYPE { $$ = new string("BOOL_TYPE"); }
                     ;
 
-funDeclaration:     baseType ID LP params RP compoundStmt { $$ = new FunDeclarationNode($1, new string($2), $4, $6, false); }
-                    | VOID_TYPE ID LP params RP compoundStmt { $$ = new FunDeclarationNode(nullptr, new string($2), $4, $6, false); }
+funDeclaration:     baseType ID LP params RP functionBody { $$ = new FunDeclarationNode($1, new string($2), $4, $6, false); }
+                    | VOID_TYPE ID LP params RP functionBody { $$ = new FunDeclarationNode(nullptr, new string($2), $4, $6, false); }
                     | EXTERN_TYPE baseType ID LP params RP SEMICOLON { $$ = new FunDeclarationNode($2, new string($3), $5, nullptr, true); }
                     | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON { $$ = new FunDeclarationNode(nullptr, new string($3), $5, nullptr, true); }
                     ;
@@ -240,6 +243,13 @@ arrayPostParam:     LB RB {
                         $$ = $1;
                     }
                     ;
+
+functionBody:       LC localDeclarations statementList RC { $$ = new FunctionBodyNode($2, $3); }
+                    | LC localDeclarations RC { $$ = new FunctionBodyNode($2, nullptr); }
+                    | LC statementList RC { $$ = new FunctionBodyNode(nullptr, $2); }
+                    | LC RC { $$ = new FunctionBodyNode(nullptr, nullptr); }
+                    ;
+
 
 compoundStmt:       LC localDeclarations statementList RC { $$ = new CompoundStmtNode($2, $3); }
                     | LC localDeclarations RC { $$ = new CompoundStmtNode($2, nullptr); }
@@ -380,15 +390,6 @@ argList:            argList COMMA expression {
                     ;    
 
 %%
-
-int main() { 
-    yyparse();
-    cout << "Program" << endl;
-    for(auto p : *root) {
-        p->printNode(1);
-    }
-    return 0;
-}
 
 void yyerror(std::string s) {
     fprintf(stderr, "%s\n", s.c_str());
