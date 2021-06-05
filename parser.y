@@ -15,7 +15,7 @@ extern int yylineno;
 extern char* yytext;
 extern FILE* yyin;
 
-unique_ptr<vector<unique_ptr<declarationNode>>> root;
+unique_ptr<vector<unique_ptr<DeclarationNode>>> root;
 
 extern int yylex(void);
 
@@ -28,7 +28,6 @@ int typeCheck(char* type);/*类型检查*/
 %union{
     unique_ptr<DeclarationNode>     declarationNode;
     unique_ptr<VarDeclarationNode>  varDeclarationNode;
-    unique_ptr<ArrayInitListNode>   arrayInitListNode;
     unique_ptr<FunDeclarationNode>  funDeclarationNode;
     unique_ptr<ParamNode>           paramNode;
     unique_ptr<CompoundStmtNode>    compoundStmtNode;
@@ -49,9 +48,8 @@ int typeCheck(char* type);/*类型检查*/
 
     unique_ptr<vector<unique_ptr<DeclarationNode>>>  declarationNodeVec;
     unique_ptr<vector<unique_ptr<IdListNode>>>  idListNodeVec;
-    unique_ptr<vector<unique_ptr<ArrayInitListNode>>>  arrayInitListNodeVec;
     unique_ptr<vector<unique_ptr<SingleNode>>>  singleNodeVec;
-    unique_ptr<vector<unique_ptr<Param>>>  paramVec;
+    unique_ptr<vector<unique_ptr<ParamNode>>>  paramVec;
     unique_ptr<vector<unique_ptr<VarDeclarationNode>>>  varDeclarationNodeVec;
     unique_ptr<vector<unique_ptr<StatementNode>>>  statementNodeVec;
     unique_ptr<vector<unique_ptr<ExpressionNode>>>  expressionNodeVec;
@@ -74,12 +72,12 @@ int typeCheck(char* type);/*类型检查*/
 %token <type_id> ID
 
 %token IF ELSE WHILE RETURN FOR //keywords
-%token <string> INT_TYPE VOID_TYPE DOUBLE_TYPE FLOAT_TYPE CHAR_TYPE BOOL_TYPE EXTERN_TYPE//type words
+%token <type_id> INT_TYPE VOID_TYPE DOUBLE_TYPE FLOAT_TYPE CHAR_TYPE BOOL_TYPE EXTERN_TYPE//type words
 
 %token LP RP LC RC LB RB SEMICOLON COMMA //assoc chara
-%token <string> ASSIGN PLUSASSIGN MINUSASSIGN MULTASSIGN DIVASSIGN MODASSIGN BORASSIGN BXORASSIGN BANDASSIGN SRASSIGN SLASSIGN //assign op
-%token <string> LOR LAND BOR BAND BXOR SR SL PLUS MINUS MULT DIV MOD LNOT BNOT INCR DECR //op
-%token <string> EQ NEQ LT GT LTE GTE //relop
+%token /* <char*> */  ASSIGN PLUSASSIGN MINUSASSIGN MULTASSIGN DIVASSIGN MODASSIGN BORASSIGN BXORASSIGN BANDASSIGN SRASSIGN SLASSIGN //assign op
+%token /* <char*> */  LOR LAND BOR BAND BXOR SR SL PLUS MINUS MULT DIV MOD LNOT BNOT INCR DECR //op
+%token /* <char*> */  EQ NEQ LT GT LTE GTE //relop
             
 %type<declarationNode>      declaration
 %type<varDeclarationNode>   varDeclaration
@@ -217,17 +215,17 @@ arrayConstList:     arrayConstList COMMA single {
                         $$->push_back(move($1));
                     }
 
-baseType:           INT_TYPE { $$ = make_unique<string>($1); }
-                    | DOUBLE_TYPE { $$ = make_unique<string>($1); }
-                    | FLOAT_TYPE { $$ = make_unique<string>($1); }
-                    | CHAR_TYPE { $$ = make_unique<string>($1); }
-                    | BOOL_TYPE { $$ = make_unique<string>($1); }
+baseType:           INT_TYPE { $$ = make_unique<string>("INT_TYPE"); }
+                    | DOUBLE_TYPE { $$ = make_unique<string>("DOUBLE_TYPE"); }
+                    | FLOAT_TYPE { $$ = make_unique<string>("FLOAT_TYPE"); }
+                    | CHAR_TYPE { $$ = make_unique<string>("CHAR_TYPE"); }
+                    | BOOL_TYPE { $$ = make_unique<string>("BOOL_TYPE"); }
                     ;
 
-funDeclaration:     baseType ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(make_unique<string>($1), move($4), move($6), false) }
-                    | VOID_TYPE ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(nullptr, move($4), move($6), false) }
-                    | EXTERN_TYPE baseType ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(make_unique<string>($2), move($5), nullptr, true) }
-                    | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(nullptr, move($5), nullptr, true) }
+funDeclaration:     baseType ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(make_unique<string>($1), make_unique<string>($2), move($4), move($6), false) }
+                    | VOID_TYPE ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(nullptr, make_unique<string>($2), move($4), move($6), false) }
+                    | EXTERN_TYPE baseType ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(make_unique<string>($2), make_unique<string>($3), move($5), nullptr, true) }
+                    | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(nullptr, make_unique<string>($3), move($5), nullptr, true) }
                     ;
 
 params:             paramList { $$ = move($1) }
@@ -298,7 +296,7 @@ expressionStmt:     expression SEMICOLON { $$ = move($1); }
                     ;
 
 selectionStmt:      IF LP expression RP statement { $$ = make_unique<SelectionStmtNode>(move($3), move($5), nullptr); }
-                    | IF LP expression RP statement ELSE statement { $$ = make_unique<selectionStmtNode>(move($3), move($5), move($7)); }
+                    | IF LP expression RP statement ELSE statement { $$ = make_unique<SelectionStmtNode>(move($3), move($5), move($7)); }
                     ;
 
 iterationStmt:      whileStmt { $$ = make_unique<IterationStmtNode>(move($1)); }
@@ -323,41 +321,41 @@ expression:         var assop expression { $$ = make_unique<ExpressionNode>(move
                     | operand { $$ = make_unique<ExpressionNode>(nullptr, nullptr, move($1)); }
                     ;
 
-assop:              ASSIGN { $$ = make_unique<string>($1); }
-                    | PLUSASSIGN { $$ = make_unique<string>($1); } 
-                    | MINUSASSIGN { $$ = make_unique<string>($1); } 
-                    | MULTASSIGN { $$ = make_unique<string>($1); } 
-                    | DIVASSIGN { $$ = make_unique<string>($1); } 
-                    | MODASSIGN { $$ = make_unique<string>($1); } 
-                    | BANDASSIGN { $$ = make_unique<string>($1); } 
-                    | BORASSIGN { $$ = make_unique<string>($1); } 
-                    | BXORASSIGN { $$ = make_unique<string>($1); } 
-                    | SLASSIGN { $$ = make_unique<string>($1); } 
-                    | SRASSIGN { $$ = make_unique<string>($1); } 
+assop:              ASSIGN { $$ = make_unique<string>("ASSIGN"); }
+                    | PLUSASSIGN { $$ = make_unique<string>("PLUSASSIGN"); } 
+                    | MINUSASSIGN { $$ = make_unique<string>("MINUSASSIGN"); } 
+                    | MULTASSIGN { $$ = make_unique<string>("MULTASSIGN"); } 
+                    | DIVASSIGN { $$ = make_unique<string>("DIVASSIGN"); } 
+                    | MODASSIGN { $$ = make_unique<string>("MODASSIGN"); } 
+                    | BANDASSIGN { $$ = make_unique<string>("BANDASSIGN"); } 
+                    | BORASSIGN { $$ = make_unique<string>("BORASSIGN"); } 
+                    | BXORASSIGN { $$ = make_unique<string>("BXORASSIGN"); } 
+                    | SLASSIGN { $$ = make_unique<string>("SLASSIGN"); } 
+                    | SRASSIGN { $$ = make_unique<string>("SRASSIGN"); } 
                     ;
 
 var:                ID { $$ = make_unique<VarNode>(make_unique<string>($1), nullptr); }
                     | ID arrayPost { $$ = make_unique<VarNode>(make_unique<string>($1), move($2)); }
                     ;
 
-operand:            operand LOR operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand LAND operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand BOR operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand BXOR operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand BAND operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand EQ operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand NEQ operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand LT operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand GT operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand LTE operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand GTE operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand SL operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand SR operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand PLUS operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand MINUS operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand MULT operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand DIV operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
-                    | operand MOD operand { $$ = make_unique<OperandNode>(make_unique<string>($2), move($1), move($3)); }
+operand:            operand LOR operand { $$ = make_unique<OperandNode>(make_unique<string>("LOR"), move($1), move($3)); }
+                    | operand LAND operand { $$ = make_unique<OperandNode>(make_unique<string>("LAND"), move($1), move($3)); }
+                    | operand BOR operand { $$ = make_unique<OperandNode>(make_unique<string>("BOR"), move($1), move($3)); }
+                    | operand BXOR operand { $$ = make_unique<OperandNode>(make_unique<string>("BXOR"), move($1), move($3)); }
+                    | operand BAND operand { $$ = make_unique<OperandNode>(make_unique<string>("BAND"), move($1), move($3)); }
+                    | operand EQ operand { $$ = make_unique<OperandNode>(make_unique<string>("EQ"), move($1), move($3)); }
+                    | operand NEQ operand { $$ = make_unique<OperandNode>(make_unique<string>("NEQ"), move($1), move($3)); }
+                    | operand LT operand { $$ = make_unique<OperandNode>(make_unique<string>("LT"), move($1), move($3)); }
+                    | operand GT operand { $$ = make_unique<OperandNode>(make_unique<string>("GT"), move($1), move($3)); }
+                    | operand LTE operand { $$ = make_unique<OperandNode>(make_unique<string>("LTE"), move($1), move($3)); }
+                    | operand GTE operand { $$ = make_unique<OperandNode>(make_unique<string>("GTE"), move($1), move($3)); }
+                    | operand SL operand { $$ = make_unique<OperandNode>(make_unique<string>("SL"), move($1), move($3)); }
+                    | operand SR operand { $$ = make_unique<OperandNode>(make_unique<string>("SR"), move($1), move($3)); }
+                    | operand PLUS operand { $$ = make_unique<OperandNode>(make_unique<string>("PLUS"), move($1), move($3)); }
+                    | operand MINUS operand { $$ = make_unique<OperandNode>(make_unique<string>("MINUS"), move($1), move($3)); }
+                    | operand MULT operand { $$ = make_unique<OperandNode>(make_unique<string>("MULT"), move($1), move($3)); }
+                    | operand DIV operand { $$ = make_unique<OperandNode>(make_unique<string>("DIV"), move($1), move($3)); }
+                    | operand MOD operand { $$ = make_unique<OperandNode>(make_unique<string>("MOD"), move($1), move($3)); }
                     | prefix LP operand RP { $$ = make_unique<OperandNode>(move($1), move($3), nullptr); }
                     | LP operand RP { $$ = make_unique<OperandNode>(nullptr, move($2), nullptr); }
                     | prefix single {  $$ = make_unique<OperandNode>(move($1), move($2), nullptr); }
@@ -365,18 +363,18 @@ operand:            operand LOR operand { $$ = make_unique<OperandNode>(make_uni
                     ;
                     
 
-prefix:             BNOT { $$ = make_unique<string>($1); }
-                    | LNOT  { $$ = make_unique<string>($1); }
-                    | MINUS { $$ = make_unique<string>($1); }
+prefix:             BNOT { $$ = make_unique<string>("BNOT"); }
+                    | LNOT  { $$ = make_unique<string>("LNOT"); }
+                    | MINUS { $$ = make_unique<string>("MINUS"); }
                     ;
 
-single:             var { $$ = make_unique<SingleNode>( make_unique<string>($1) ); }
-                    | call { $$ = make_unique<SingleNode>($1); }
-                    | INT { $$ = make_unique<SingleNode>($1); }
-                    | FLOAT { $$ = make_unique<SingleNode>($1); }
-                    | CHAR { $$ = make_unique<SingleNode>($1); }
-                    | TRUE { $$ = make_unique<SingleNode>($1); }
-                    | FALSE { $$ = make_unique<SingleNode>($1); }
+single:             var { $$ = make_unique<SingleNode>( move($1) ); }
+                    | call { $$ = make_unique<SingleNode>( move($1) ); }
+                    | INT { $$ = make_unique<SingleNode>(make_unique<IntNode>($1)); }
+                    | FLOAT { $$ = make_unique<SingleNode>(make_unique<FloatNode>($1)); }
+                    | CHAR { $$ = make_unique<SingleNode>(make_unique<CharNode>($1)); }
+                    | TRUE { $$ = make_unique<SingleNode>(make_unique<BoolNode>($1)); }
+                    | FALSE { $$ = make_unique<SingleNode>(make_unique<BoolNode>($1)); }
                     // overload multiple initialization fun, with different type (enum)
                     ;
 
@@ -402,6 +400,9 @@ argList:            argList COMMA expression {
 
 int main() { 
     yyparse();
+    for(auto p : *root) {
+        p->printNode();
+    }
     return 0;
 }
 

@@ -981,9 +981,10 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 /*不知为何这里参考代码写的是[1]*/
+/* 例如匹配'c', c就在第二个 */
 case 17:
 YY_RULE_SETUP
-#line 91 "lexer.l"
+#line 92 "lexer.l"
 {
     yylval.type_char = yytext[1]; 
     return CHAR;
@@ -991,7 +992,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 96 "lexer.l"
+#line 97 "lexer.l"
 {
     strcpy(yylval.type_id, yytext);
     return ID;
@@ -1000,254 +1001,254 @@ YY_RULE_SETUP
 /*特殊符号(按优先级), B for bitwise L for Logic*/
 case 19:
 YY_RULE_SETUP
-#line 102 "lexer.l"
+#line 103 "lexer.l"
 return ASSIGN;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 103 "lexer.l"
+#line 104 "lexer.l"
 return PLUSASSIGN;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 104 "lexer.l"
+#line 105 "lexer.l"
 return MINUSASSIGN;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 105 "lexer.l"
+#line 106 "lexer.l"
 return MULTASSIGN;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 106 "lexer.l"
+#line 107 "lexer.l"
 return DIVASSIGN;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 107 "lexer.l"
+#line 108 "lexer.l"
 return MODASSIGN;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 108 "lexer.l"
+#line 109 "lexer.l"
 return BORASSIGN;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 109 "lexer.l"
+#line 110 "lexer.l"
 return BANDASSIGN;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 110 "lexer.l"
+#line 111 "lexer.l"
 return BXORASSIGN;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 111 "lexer.l"
+#line 112 "lexer.l"
 return SRASSIGN;
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 112 "lexer.l"
+#line 113 "lexer.l"
 return SLASSIGN;
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 114 "lexer.l"
+#line 115 "lexer.l"
 return LOR;
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 115 "lexer.l"
+#line 116 "lexer.l"
 return LAND;
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 117 "lexer.l"
+#line 118 "lexer.l"
 return BOR;
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 118 "lexer.l"
+#line 119 "lexer.l"
 return BAND;
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 119 "lexer.l"
+#line 120 "lexer.l"
 return BXOR;
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 121 "lexer.l"
+#line 122 "lexer.l"
 return GT;
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 122 "lexer.l"
+#line 123 "lexer.l"
 return LT;
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 123 "lexer.l"
+#line 124 "lexer.l"
 return GTE;
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 124 "lexer.l"
+#line 125 "lexer.l"
 return LTE;
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 125 "lexer.l"
+#line 126 "lexer.l"
 return EQ;
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 126 "lexer.l"
+#line 127 "lexer.l"
 return NEQ;
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 128 "lexer.l"
+#line 129 "lexer.l"
 return SL;
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 129 "lexer.l"
+#line 130 "lexer.l"
 return SR;
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 131 "lexer.l"
+#line 132 "lexer.l"
 return PLUS;
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 132 "lexer.l"
+#line 133 "lexer.l"
 return MINUS;
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 133 "lexer.l"
+#line 134 "lexer.l"
 return MULT;
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 134 "lexer.l"
+#line 135 "lexer.l"
 return DIV;
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 135 "lexer.l"
+#line 136 "lexer.l"
 return MOD;
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 137 "lexer.l"
+#line 138 "lexer.l"
 return LNOT;
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 138 "lexer.l"
+#line 139 "lexer.l"
 return BNOT;
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 140 "lexer.l"
+#line 141 "lexer.l"
 return INCR;
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 141 "lexer.l"
+#line 142 "lexer.l"
 return DECR;
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 143 "lexer.l"
+#line 144 "lexer.l"
 return LP;
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 144 "lexer.l"
+#line 145 "lexer.l"
 return RP;
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 145 "lexer.l"
+#line 146 "lexer.l"
 return LC;
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 146 "lexer.l"
+#line 147 "lexer.l"
 return RC;
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 147 "lexer.l"
+#line 148 "lexer.l"
 return LB;
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 148 "lexer.l"
+#line 149 "lexer.l"
 return RB;
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 150 "lexer.l"
+#line 151 "lexer.l"
 return COMMA;
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 151 "lexer.l"
+#line 152 "lexer.l"
 return SEMICOLON;
 	YY_BREAK
 /*空白符*/
 case 60:
 YY_RULE_SETUP
-#line 155 "lexer.l"
+#line 156 "lexer.l"
 {}
 	YY_BREAK
 case 61:
 /* rule 61 can match eol */
 YY_RULE_SETUP
-#line 157 "lexer.l"
+#line 158 "lexer.l"
 {}
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 159 "lexer.l"
+#line 160 "lexer.l"
 {}
 	YY_BREAK
 /*C语言注释处理*/
 case 63:
 YY_RULE_SETUP
-#line 162 "lexer.l"
+#line 163 "lexer.l"
 BEGIN(C_COMMENT);
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 163 "lexer.l"
+#line 164 "lexer.l"
 BEGIN(INITIAL);
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 164 "lexer.l"
+#line 165 "lexer.l"
 {}
 	YY_BREAK
 /*未知符号*/
 case 66:
 YY_RULE_SETUP
-#line 167 "lexer.l"
+#line 168 "lexer.l"
 yyerror("invalid character\n");
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 169 "lexer.l"
+#line 170 "lexer.l"
 ECHO;
 	YY_BREAK
-#line 1251 "lex.yy.c"
+#line 1252 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(C_COMMENT):
 	yyterminate();
@@ -2265,7 +2266,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 169 "lexer.l"
+#line 170 "lexer.l"
 
 
 int yywrap(void) {

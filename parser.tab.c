@@ -85,7 +85,7 @@ extern int yylineno;
 extern char* yytext;
 extern FILE* yyin;
 
-unique_ptr<Node> root;
+unique_ptr<vector<unique_ptr<DeclarationNode>>> root;
 
 extern int yylex(void);
 
@@ -117,145 +117,7 @@ int typeCheck(char* type);/*类型检查*/
 #  endif
 # endif
 
-
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
-
-/* Token kinds.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    INT = 258,                     /* INT  */
-    FLOAT = 259,                   /* FLOAT  */
-    TRUE = 260,                    /* TRUE  */
-    FALSE = 261,                   /* FALSE  */
-    CHAR = 262,                    /* CHAR  */
-    ID = 263,                      /* ID  */
-    IF = 264,                      /* IF  */
-    ELSE = 265,                    /* ELSE  */
-    WHILE = 266,                   /* WHILE  */
-    RETURN = 267,                  /* RETURN  */
-    FOR = 268,                     /* FOR  */
-    INT_TYPE = 269,                /* INT_TYPE  */
-    VOID_TYPE = 270,               /* VOID_TYPE  */
-    DOUBLE_TYPE = 271,             /* DOUBLE_TYPE  */
-    FLOAT_TYPE = 272,              /* FLOAT_TYPE  */
-    CHAR_TYPE = 273,               /* CHAR_TYPE  */
-    BOOL_TYPE = 274,               /* BOOL_TYPE  */
-    EXTERN_TYPE = 275,             /* EXTERN_TYPE  */
-    LP = 276,                      /* LP  */
-    RP = 277,                      /* RP  */
-    LC = 278,                      /* LC  */
-    RC = 279,                      /* RC  */
-    LB = 280,                      /* LB  */
-    RB = 281,                      /* RB  */
-    SEMICOLON = 282,               /* SEMICOLON  */
-    COMMA = 283,                   /* COMMA  */
-    ASSIGN = 284,                  /* ASSIGN  */
-    PLUSASSIGN = 285,              /* PLUSASSIGN  */
-    MINUSASSIGN = 286,             /* MINUSASSIGN  */
-    MULTASSIGN = 287,              /* MULTASSIGN  */
-    DIVASSIGN = 288,               /* DIVASSIGN  */
-    MODASSIGN = 289,               /* MODASSIGN  */
-    BORASSIGN = 290,               /* BORASSIGN  */
-    BXORASSIGN = 291,              /* BXORASSIGN  */
-    BANDASSIGN = 292,              /* BANDASSIGN  */
-    SRASSIGN = 293,                /* SRASSIGN  */
-    SLASSIGN = 294,                /* SLASSIGN  */
-    LOR = 295,                     /* LOR  */
-    LAND = 296,                    /* LAND  */
-    BOR = 297,                     /* BOR  */
-    BAND = 298,                    /* BAND  */
-    BXOR = 299,                    /* BXOR  */
-    SR = 300,                      /* SR  */
-    SL = 301,                      /* SL  */
-    PLUS = 302,                    /* PLUS  */
-    MINUS = 303,                   /* MINUS  */
-    MULT = 304,                    /* MULT  */
-    DIV = 305,                     /* DIV  */
-    MOD = 306,                     /* MOD  */
-    LNOT = 307,                    /* LNOT  */
-    BNOT = 308,                    /* BNOT  */
-    INCR = 309,                    /* INCR  */
-    DECR = 310,                    /* DECR  */
-    EQ = 311,                      /* EQ  */
-    NEQ = 312,                     /* NEQ  */
-    LT = 313,                      /* LT  */
-    GT = 314,                      /* GT  */
-    LTE = 315,                     /* LTE  */
-    GTE = 316                      /* GTE  */
-  };
-  typedef enum yytokentype yytoken_kind_t;
-#endif
-
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-union YYSTYPE
-{
-#line 28 "parser.y"
-
-    unique_ptr<DeclarationNode>     declarationNode;
-    unique_ptr<VarDeclarationNode>  varDeclarationNode;
-    unique_ptr<ArrayInitListNode>   arrayInitListNode;
-    unique_ptr<FunDeclarationNode>  funDeclarationNode;
-    unique_ptr<ParamNode>           paramNode;
-    unique_ptr<CompoundStmtNode>    compoundStmtNode;
-    unique_ptr<StatementNode>       statementNode;
-    unique_ptr<SelectionStmtNode>   selectionStmtNode;
-    unique_ptr<IterationStmtNode>   iterationStmtNode;
-    unique_ptr<WhileStmtNode>       whileStmtNode;
-    unique_ptr<ForStmtNode>         forStmtNode;
-    unique_ptr<ReturnStmtNode>      returnStmtNode;
-    unique_ptr<ExpressionNode>      expressionNode;
-    unique_ptr<VarNode>             varNode;
-    unique_ptr<OperandNode>         operandNode;
-    unique_ptr<SingleNode>          singleNode;
-    unique_ptr<CallNode>            callNode;
-    
-    unique_ptr<vector<int>> intVec;
-    unique_ptr<string>  stringNode;
-
-    unique_ptr<vector<unique_ptr<DeclarationNode>>>  declarationNodeVec;
-    unique_ptr<vector<unique_ptr<IdListNode>>>  idListNodeVec;
-    unique_ptr<vector<unique_ptr<ArrayInitListNode>>>  arrayInitListNodeVec;
-    unique_ptr<vector<unique_ptr<SingleNode>>>  singleNodeVec;
-    unique_ptr<vector<unique_ptr<Param>>>  paramVec;
-    unique_ptr<vector<unique_ptr<VarDeclarationNode>>>  varDeclarationNodeVec;
-    unique_ptr<vector<unique_ptr<StatementNode>>>  statementNodeVec;
-    unique_ptr<vector<unique_ptr<ExpressionNode>>>  expressionNodeVec;
-
-    int type_int;
-    float type_float;
-    double type_double; // needed?
-    bool type_bool;
-    char type_char;
-    char type_id[32];
-
-
-#line 246 "parser.tab.c"
-
-};
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
-#endif
-
-
-extern YYSTYPE yylval;
-
-int yyparse (void);
-
-
+#include "parser.tab.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
@@ -676,7 +538,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  17
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   522
+#define YYLAST   507
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  62
@@ -685,7 +547,7 @@ union yyalloc
 /* YYNRULES -- Number of rules.  */
 #define YYNRULES  110
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  207
+#define YYNSTATES  205
 
 /* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   316
@@ -740,7 +602,7 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   135,   135,   138,   142,   148,   149,   152,   153,   158,
+       0,   133,   133,   136,   140,   146,   147,   150,   153,   158,
      165,   169,   173,   177,   183,   187,   209,   213,   218,   219,
      220,   221,   222,   225,   226,   227,   228,   231,   232,   235,
      239,   245,   246,   249,   252,   255,   261,   262,   263,   264,
@@ -807,7 +669,7 @@ static const yytype_int16 yytoknum[] =
 };
 #endif
 
-#define YYPACT_NINF (-150)
+#define YYPACT_NINF (-151)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -821,27 +683,27 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-     191,  -150,    15,  -150,  -150,  -150,  -150,    20,     9,   191,
-    -150,  -150,    24,  -150,    32,    37,    50,  -150,  -150,    -4,
-      22,   149,    58,    68,   149,    91,   282,    80,  -150,    93,
-    -150,    96,    77,    82,  -150,   149,   149,    89,    98,  -150,
-    -150,  -150,  -150,  -150,    -1,   282,  -150,  -150,  -150,  -150,
-     275,   348,     8,  -150,  -150,   122,  -150,   103,   104,   117,
-     111,   121,   123,   124,   111,  -150,   282,   282,  -150,   296,
-    -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,  -150,
-    -150,   282,   282,   282,   282,   282,   282,   282,   282,   282,
-     282,   282,   282,   282,   282,   282,   282,   282,   282,   282,
-     282,  -150,   118,   355,   282,     2,   128,    79,  -150,  -150,
-     120,   131,  -150,  -150,   137,   132,   146,  -150,  -150,   369,
-     389,   408,   444,   427,   278,   278,    69,    69,  -150,  -150,
-    -150,   461,   461,   193,   193,   193,   193,   326,  -150,     3,
-    -150,  -150,   148,  -150,   174,   166,   171,   109,   176,  -150,
-    -150,  -150,   194,  -150,   177,   210,  -150,  -150,  -150,  -150,
-    -150,  -150,  -150,   172,  -150,  -150,  -150,   282,  -150,  -150,
-     185,   355,  -150,   198,   282,   282,  -150,   199,   282,    19,
-    -150,  -150,   243,  -150,  -150,  -150,  -150,  -150,  -150,  -150,
-     181,   205,  -150,   201,  -150,   271,   271,   282,   222,  -150,
-     208,   271,   282,  -150,   214,   271,  -150
+     189,  -151,    15,  -151,  -151,  -151,  -151,   342,    38,   189,
+    -151,  -151,    31,  -151,    35,    74,    83,  -151,  -151,    82,
+     -21,   478,    75,    80,   478,   103,   280,   110,  -151,   101,
+    -151,   111,   116,   104,  -151,   478,   478,   119,   105,  -151,
+    -151,  -151,  -151,  -151,    20,   280,  -151,  -151,  -151,  -151,
+     273,   346,    29,  -151,  -151,   140,  -151,   121,   124,   120,
+     135,   107,   137,   138,   135,  -151,   280,   139,  -151,   294,
+    -151,  -151,  -151,  -151,  -151,  -151,  -151,  -151,  -151,  -151,
+    -151,   280,   280,   280,   280,   280,   280,   280,   280,   280,
+     280,   280,   280,   280,   280,   280,   280,   280,   280,   280,
+     280,  -151,   144,   499,   280,     5,   141,    81,  -151,  -151,
+     136,   145,  -151,  -151,   143,   147,  -151,  -151,   367,   387,
+     406,   423,   -32,   276,   276,    -3,    -3,  -151,  -151,  -151,
+     440,   440,   191,   191,   191,   191,   324,  -151,    30,  -151,
+    -151,   159,  -151,   187,   174,   176,   109,   179,  -151,  -151,
+    -151,   193,  -151,   175,   208,  -151,  -151,  -151,  -151,  -151,
+    -151,  -151,   183,  -151,  -151,  -151,   280,  -151,   195,   499,
+    -151,   192,   280,   280,  -151,   197,   280,    54,  -151,  -151,
+     241,  -151,  -151,  -151,  -151,  -151,  -151,  -151,   203,   204,
+    -151,   206,  -151,   269,   269,   280,   220,  -151,   207,   269,
+     280,  -151,   221,   269,  -151
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -855,38 +717,38 @@ static const yytype_int8 yydefact[] =
       28,     0,     0,    27,    30,     0,     0,     0,     0,   101,
      102,   104,   105,   103,    72,     0,    98,    97,    96,    13,
       99,    60,     0,    95,   100,     0,     8,     0,    10,    31,
-       0,     0,     0,     0,     0,    14,   107,     0,    99,     0,
+       0,     0,     0,     0,     0,    14,   107,    73,    99,     0,
       61,    62,    63,    64,    65,    66,    68,    69,    67,    71,
       70,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,    94,     0,     0,     0,     0,    32,     0,    24,    29,
-       0,     0,    23,   110,     0,   108,     0,    93,    59,    74,
-      75,    76,    78,    77,    86,    85,    87,    88,    89,    90,
-      91,    79,    80,    81,    82,    83,    84,     0,    15,     0,
-      17,    11,     0,    33,     0,     0,     0,     0,     0,    39,
-      50,    40,     0,    45,     0,     0,    42,    44,    46,    47,
-      53,    54,    48,     0,    26,    25,   106,     0,    73,    92,
-       0,     0,    34,     0,     0,     0,    57,     0,     0,    12,
-      37,    41,     0,    38,    43,    49,   109,     9,    16,    35,
-       0,     0,    58,     0,    36,     0,     0,     0,    51,    55,
-       0,     0,     0,    52,     0,     0,    56
+       0,     0,    23,   110,     0,   108,    93,    59,    74,    75,
+      76,    78,    77,    86,    85,    87,    88,    89,    90,    91,
+      79,    80,    81,    82,    83,    84,     0,    15,     0,    17,
+      11,     0,    33,     0,     0,     0,     0,     0,    39,    50,
+      40,     0,    45,     0,     0,    42,    44,    46,    47,    53,
+      54,    48,     0,    26,    25,   106,     0,    92,     0,     0,
+      34,     0,     0,     0,    57,     0,     0,    12,    37,    41,
+       0,    38,    43,    49,   109,     9,    16,    35,     0,     0,
+      58,     0,    36,     0,     0,     0,    51,    55,     0,     0,
+       0,    52,     0,     0,    56
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -150,  -150,  -150,   211,  -103,  -150,  -150,  -150,     1,  -150,
-     -17,  -150,   184,  -150,   -34,  -150,    99,  -149,  -150,  -150,
-    -150,  -150,  -150,  -150,   -24,  -150,   -26,   -23,  -150,   -49,
-    -150,  -150,  -150
+    -151,  -151,  -151,   242,  -102,  -151,   211,  -151,     3,  -151,
+     -15,  -151,   196,  -151,    91,  -151,   106,  -150,  -151,  -151,
+    -151,  -151,  -151,  -151,   -24,  -151,   -26,   -23,  -151,   -51,
+    -151,  -151,  -151
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_uint8 yydefgoto[] =
 {
-       0,     8,     9,    10,    11,    20,    27,   139,    31,    13,
-      32,    33,    34,   106,   153,   154,   155,   156,   157,   158,
-     159,   160,   161,   162,   163,    81,    68,    51,    52,    53,
+       0,     8,     9,    10,    11,    20,    27,   138,    31,    13,
+      32,    33,    34,   106,   152,   153,   154,   155,   156,   157,
+     158,   159,   160,   161,   162,    81,    68,    51,    52,    53,
       54,   114,   115
 };
 
@@ -895,116 +757,112 @@ static const yytype_uint8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      50,    12,    49,   101,   151,   142,   184,    37,    16,    17,
-      12,    39,    40,    41,    42,    43,    44,    24,    62,    63,
-      66,    25,    69,    14,    67,    26,   108,   170,   143,   100,
-     112,   171,    19,   184,     1,    15,     3,     4,     5,     6,
-      50,    50,   113,   116,    25,    22,   198,   199,    26,    28,
-      29,   181,   203,    21,   140,    50,   206,   118,    23,   119,
-     120,   121,   122,   123,   124,   125,   126,   127,   128,   129,
-     130,   131,   132,   133,   134,   135,   136,   137,    50,    35,
-     141,    50,    39,    40,    41,    42,    43,    44,   145,    36,
-     146,   147,   148,     1,    38,     3,     4,     5,     6,    60,
-      45,    58,   107,   149,    59,    55,   150,    56,   152,    57,
-      61,    64,    39,    40,    41,    42,    43,    44,    91,    92,
-      93,    50,   188,   177,    65,   102,   103,    46,    50,    50,
-      45,    47,    48,   104,   107,     1,   176,     3,     4,     5,
-       6,    50,   105,   186,   138,   110,   111,   164,    50,    50,
-     190,   191,    50,   144,   193,   152,    50,    46,   165,   166,
-     167,    47,    48,     1,    30,     3,     4,     5,     6,    50,
-      50,    50,   168,   200,   172,    50,    50,   173,   204,    50,
-      39,    40,    41,    42,    43,    44,   145,   174,   146,   147,
-     148,     1,   175,     3,     4,     5,     6,   178,    45,   185,
-     107,   180,   179,   195,   150,     1,     2,     3,     4,     5,
-       6,     7,   187,    39,    40,    41,    42,    43,    44,   145,
-      18,   146,   147,   148,   189,    46,   192,   196,   197,    47,
-      48,    45,   201,   107,   183,   202,   205,   150,    87,    88,
-      89,    90,    91,    92,    93,   109,    39,    40,    41,    42,
-      43,    44,   145,   182,   146,   147,   148,     0,    46,     0,
-       0,     0,    47,    48,    45,     0,   107,   194,     0,     0,
-     150,     0,     0,     0,    39,    40,    41,    42,    43,    44,
-     145,     0,   146,   147,   148,    39,    40,    41,    42,    43,
-      44,    46,    45,     0,   107,    47,    48,     0,   150,     0,
-       0,     0,     0,    45,    70,    71,    72,    73,    74,    75,
-      76,    77,    78,    79,    80,     0,     0,     0,   117,    46,
-       0,     0,     0,    47,    48,    89,    90,    91,    92,    93,
-      46,     0,     0,     0,    47,    48,    82,    83,    84,    85,
-      86,    87,    88,    89,    90,    91,    92,    93,   169,     0,
-       0,     0,    94,    95,    96,    97,    98,    99,    39,    40,
-      41,    42,    43,    44,     0,     0,    82,    83,    84,    85,
-      86,    87,    88,    89,    90,    91,    92,    93,     0,     0,
-       0,     0,    94,    95,    96,    97,    98,    99,    82,    83,
-      84,    85,    86,    87,    88,    89,    90,    91,    92,    93,
-       0,     0,     0,     0,    94,    95,    96,    97,    98,    99,
-      83,    84,    85,    86,    87,    88,    89,    90,    91,    92,
-      93,     0,     0,     0,     0,    94,    95,    96,    97,    98,
-      99,    84,    85,    86,    87,    88,    89,    90,    91,    92,
-      93,     0,     0,     0,     0,    94,    95,    96,    97,    98,
-      99,    85,    86,    87,    88,    89,    90,    91,    92,    93,
-       0,     0,     0,     0,    94,    95,    96,    97,    98,    99,
-      85,     0,    87,    88,    89,    90,    91,    92,    93,     0,
-       0,     0,     0,    94,    95,    96,    97,    98,    99,    87,
+      50,   101,    49,    12,   182,   150,    28,    29,   141,    37,
+      16,    85,    12,    87,    88,    89,    90,    91,    92,    93,
+      62,    63,    69,    14,    94,    95,    96,    97,    98,    99,
+     182,   142,    39,    40,    41,    42,    43,    44,    17,    19,
+      50,    66,   113,   196,   197,    25,    91,    92,    93,   201,
+     100,   179,   139,   204,   168,    50,    21,   117,   169,   118,
+     119,   120,   121,   122,   123,   124,   125,   126,   127,   128,
+     129,   130,   131,   132,   133,   134,   135,   136,    50,    25,
+     140,    50,    22,    26,    39,    40,    41,    42,    43,    44,
+     144,    23,   145,   146,   147,     1,    35,     3,     4,     5,
+       6,    36,    45,    24,   107,   148,    38,    25,   149,    58,
+     151,    26,    39,    40,    41,    42,    43,    44,   186,    59,
+      50,     1,   175,     3,     4,     5,     6,    50,    50,    46,
+      45,    65,    61,    47,    48,    55,   174,    56,    60,    57,
+      50,    64,   184,   102,   103,   105,    50,    50,   188,   189,
+      50,   108,   191,   104,    50,   112,   151,    46,   107,   110,
+     111,    47,    48,   163,    55,   165,   143,    50,    50,    50,
+     137,   198,   164,    50,    50,   166,   202,    50,    39,    40,
+      41,    42,    43,    44,   144,   170,   145,   146,   147,     1,
+     171,     3,     4,     5,     6,   172,    45,   173,   107,   178,
+     176,   177,   149,     1,     2,     3,     4,     5,     6,     7,
+     183,    39,    40,    41,    42,    43,    44,   144,   187,   145,
+     146,   147,   185,    46,   190,   193,   194,    47,    48,    45,
+     199,   107,   181,   195,   200,   149,    87,    88,    89,    90,
+      91,    92,    93,   203,    39,    40,    41,    42,    43,    44,
+     144,    18,   145,   146,   147,    67,    46,   109,     0,   180,
+      47,    48,    45,     0,   107,   192,     0,     0,   149,     0,
+       0,     0,    39,    40,    41,    42,    43,    44,   144,     0,
+     145,   146,   147,    39,    40,    41,    42,    43,    44,    46,
+      45,     0,   107,    47,    48,     0,   149,     0,     0,     0,
+       0,    45,    70,    71,    72,    73,    74,    75,    76,    77,
+      78,    79,    80,     0,     0,     0,   116,    46,     0,     0,
+       0,    47,    48,    89,    90,    91,    92,    93,    46,     0,
+       0,     0,    47,    48,    82,    83,    84,    85,    86,    87,
+      88,    89,    90,    91,    92,    93,   167,     0,     0,     0,
+      94,    95,    96,    97,    98,    99,     1,    15,     3,     4,
+       5,     6,     0,     0,    82,    83,    84,    85,    86,    87,
       88,    89,    90,    91,    92,    93,     0,     0,     0,     0,
-      94,    95,    96,    97,    98,    99,    87,    88,    89,    90,
-      91,    92,    93,     0,     0,     0,     0,     0,     0,    96,
-      97,    98,    99
+      94,    95,    96,    97,    98,    99,    82,    83,    84,    85,
+      86,    87,    88,    89,    90,    91,    92,    93,     0,     0,
+       0,     0,    94,    95,    96,    97,    98,    99,    83,    84,
+      85,    86,    87,    88,    89,    90,    91,    92,    93,     0,
+       0,     0,     0,    94,    95,    96,    97,    98,    99,    84,
+      85,    86,    87,    88,    89,    90,    91,    92,    93,     0,
+       0,     0,     0,    94,    95,    96,    97,    98,    99,    85,
+      86,    87,    88,    89,    90,    91,    92,    93,     0,     0,
+       0,     0,    94,    95,    96,    97,    98,    99,    87,    88,
+      89,    90,    91,    92,    93,     0,     0,     0,     0,    94,
+      95,    96,    97,    98,    99,    87,    88,    89,    90,    91,
+      92,    93,     1,    30,     3,     4,     5,     6,    96,    97,
+      98,    99,    39,    40,    41,    42,    43,    44
 };
 
 static const yytype_int16 yycheck[] =
 {
-      26,     0,    26,    52,   107,     3,   155,    24,     7,     0,
-       9,     3,     4,     5,     6,     7,     8,    21,    35,    36,
-      21,    25,    45,     8,    25,    29,    60,    24,    26,    21,
-      64,    28,     8,   182,    14,    15,    16,    17,    18,    19,
-      66,    67,    66,    67,    25,     8,   195,   196,    29,    27,
-      28,   154,   201,    21,   103,    81,   205,    81,     8,    82,
+      26,    52,    26,     0,   154,   107,    27,    28,     3,    24,
+       7,    43,     9,    45,    46,    47,    48,    49,    50,    51,
+      35,    36,    45,     8,    56,    57,    58,    59,    60,    61,
+     180,    26,     3,     4,     5,     6,     7,     8,     0,     8,
+      66,    21,    66,   193,   194,    25,    49,    50,    51,   199,
+      21,   153,   103,   203,    24,    81,    21,    81,    28,    82,
       83,    84,    85,    86,    87,    88,    89,    90,    91,    92,
-      93,    94,    95,    96,    97,    98,    99,   100,   104,    21,
-     104,   107,     3,     4,     5,     6,     7,     8,     9,    21,
-      11,    12,    13,    14,     3,    16,    17,    18,    19,    22,
-      21,     8,    23,    24,     8,    25,    27,    27,   107,    29,
-      28,    22,     3,     4,     5,     6,     7,     8,    49,    50,
-      51,   147,   171,   147,    26,     3,    23,    48,   154,   155,
-      21,    52,    53,    29,    23,    14,    27,    16,    17,    18,
-      19,   167,    25,   167,    26,    22,    22,    27,   174,   175,
-     174,   175,   178,    25,   178,   154,   182,    48,    27,    22,
-      28,    52,    53,    14,    15,    16,    17,    18,    19,   195,
-     196,   197,    26,   197,    26,   201,   202,     3,   202,   205,
-       3,     4,     5,     6,     7,     8,     9,    21,    11,    12,
-      13,    14,    21,    16,    17,    18,    19,    21,    21,    27,
-      23,    24,     8,    22,    27,    14,    15,    16,    17,    18,
-      19,    20,    27,     3,     4,     5,     6,     7,     8,     9,
-       9,    11,    12,    13,    26,    48,    27,    22,    27,    52,
-      53,    21,    10,    23,    24,    27,    22,    27,    45,    46,
-      47,    48,    49,    50,    51,    61,     3,     4,     5,     6,
-       7,     8,     9,   154,    11,    12,    13,    -1,    48,    -1,
-      -1,    -1,    52,    53,    21,    -1,    23,    24,    -1,    -1,
-      27,    -1,    -1,    -1,     3,     4,     5,     6,     7,     8,
-       9,    -1,    11,    12,    13,     3,     4,     5,     6,     7,
-       8,    48,    21,    -1,    23,    52,    53,    -1,    27,    -1,
-      -1,    -1,    -1,    21,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38,    39,    -1,    -1,    -1,    22,    48,
-      -1,    -1,    -1,    52,    53,    47,    48,    49,    50,    51,
-      48,    -1,    -1,    -1,    52,    53,    40,    41,    42,    43,
-      44,    45,    46,    47,    48,    49,    50,    51,    22,    -1,
-      -1,    -1,    56,    57,    58,    59,    60,    61,     3,     4,
-       5,     6,     7,     8,    -1,    -1,    40,    41,    42,    43,
-      44,    45,    46,    47,    48,    49,    50,    51,    -1,    -1,
-      -1,    -1,    56,    57,    58,    59,    60,    61,    40,    41,
-      42,    43,    44,    45,    46,    47,    48,    49,    50,    51,
-      -1,    -1,    -1,    -1,    56,    57,    58,    59,    60,    61,
-      41,    42,    43,    44,    45,    46,    47,    48,    49,    50,
-      51,    -1,    -1,    -1,    -1,    56,    57,    58,    59,    60,
-      61,    42,    43,    44,    45,    46,    47,    48,    49,    50,
-      51,    -1,    -1,    -1,    -1,    56,    57,    58,    59,    60,
-      61,    43,    44,    45,    46,    47,    48,    49,    50,    51,
-      -1,    -1,    -1,    -1,    56,    57,    58,    59,    60,    61,
-      43,    -1,    45,    46,    47,    48,    49,    50,    51,    -1,
-      -1,    -1,    -1,    56,    57,    58,    59,    60,    61,    45,
+      93,    94,    95,    96,    97,    98,    99,   100,   104,    25,
+     104,   107,     8,    29,     3,     4,     5,     6,     7,     8,
+       9,     8,    11,    12,    13,    14,    21,    16,    17,    18,
+      19,    21,    21,    21,    23,    24,     3,    25,    27,     8,
+     107,    29,     3,     4,     5,     6,     7,     8,   169,     8,
+     146,    14,   146,    16,    17,    18,    19,   153,   154,    48,
+      21,    26,    28,    52,    53,    25,    27,    27,    22,    29,
+     166,    22,   166,     3,    23,    25,   172,   173,   172,   173,
+     176,    60,   176,    29,   180,    64,   153,    48,    23,    22,
+      22,    52,    53,    27,    25,    22,    25,   193,   194,   195,
+      26,   195,    27,   199,   200,    28,   200,   203,     3,     4,
+       5,     6,     7,     8,     9,    26,    11,    12,    13,    14,
+       3,    16,    17,    18,    19,    21,    21,    21,    23,    24,
+      21,     8,    27,    14,    15,    16,    17,    18,    19,    20,
+      27,     3,     4,     5,     6,     7,     8,     9,    26,    11,
+      12,    13,    27,    48,    27,    22,    22,    52,    53,    21,
+      10,    23,    24,    27,    27,    27,    45,    46,    47,    48,
+      49,    50,    51,    22,     3,     4,     5,     6,     7,     8,
+       9,     9,    11,    12,    13,    44,    48,    61,    -1,   153,
+      52,    53,    21,    -1,    23,    24,    -1,    -1,    27,    -1,
+      -1,    -1,     3,     4,     5,     6,     7,     8,     9,    -1,
+      11,    12,    13,     3,     4,     5,     6,     7,     8,    48,
+      21,    -1,    23,    52,    53,    -1,    27,    -1,    -1,    -1,
+      -1,    21,    29,    30,    31,    32,    33,    34,    35,    36,
+      37,    38,    39,    -1,    -1,    -1,    22,    48,    -1,    -1,
+      -1,    52,    53,    47,    48,    49,    50,    51,    48,    -1,
+      -1,    -1,    52,    53,    40,    41,    42,    43,    44,    45,
+      46,    47,    48,    49,    50,    51,    22,    -1,    -1,    -1,
+      56,    57,    58,    59,    60,    61,    14,    15,    16,    17,
+      18,    19,    -1,    -1,    40,    41,    42,    43,    44,    45,
       46,    47,    48,    49,    50,    51,    -1,    -1,    -1,    -1,
-      56,    57,    58,    59,    60,    61,    45,    46,    47,    48,
-      49,    50,    51,    -1,    -1,    -1,    -1,    -1,    -1,    58,
-      59,    60,    61
+      56,    57,    58,    59,    60,    61,    40,    41,    42,    43,
+      44,    45,    46,    47,    48,    49,    50,    51,    -1,    -1,
+      -1,    -1,    56,    57,    58,    59,    60,    61,    41,    42,
+      43,    44,    45,    46,    47,    48,    49,    50,    51,    -1,
+      -1,    -1,    -1,    56,    57,    58,    59,    60,    61,    42,
+      43,    44,    45,    46,    47,    48,    49,    50,    51,    -1,
+      -1,    -1,    -1,    56,    57,    58,    59,    60,    61,    43,
+      44,    45,    46,    47,    48,    49,    50,    51,    -1,    -1,
+      -1,    -1,    56,    57,    58,    59,    60,    61,    45,    46,
+      47,    48,    49,    50,    51,    -1,    -1,    -1,    -1,    56,
+      57,    58,    59,    60,    61,    45,    46,    47,    48,    49,
+      50,    51,    14,    15,    16,    17,    18,    19,    58,    59,
+      60,    61,     3,     4,     5,     6,     7,     8
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -1017,21 +875,21 @@ static const yytype_int8 yystos[] =
       15,    70,    72,    73,    74,    21,    21,    72,     3,     3,
        4,     5,     6,     7,     8,    21,    48,    52,    53,    86,
       88,    89,    90,    91,    92,    25,    27,    29,     8,     8,
-      22,    28,    72,    72,    22,    26,    21,    25,    88,    89,
+      22,    28,    72,    72,    22,    26,    21,    68,    88,    89,
       29,    30,    31,    32,    33,    34,    35,    36,    37,    38,
       39,    87,    40,    41,    42,    43,    44,    45,    46,    47,
       48,    49,    50,    51,    56,    57,    58,    59,    60,    61,
       21,    91,     3,    23,    29,    25,    75,    23,    76,    74,
-      22,    22,    76,    86,    93,    94,    86,    22,    86,    89,
+      22,    22,    76,    86,    93,    94,    22,    86,    89,    89,
       89,    89,    89,    89,    89,    89,    89,    89,    89,    89,
-      89,    89,    89,    89,    89,    89,    89,    89,    26,    69,
-      91,    86,     3,    26,    25,     9,    11,    12,    13,    24,
-      27,    66,    70,    76,    77,    78,    79,    80,    81,    82,
-      83,    84,    85,    86,    27,    27,    22,    28,    26,    22,
-      24,    28,    26,     3,    21,    21,    27,    86,    21,     8,
-      24,    66,    78,    24,    79,    27,    86,    27,    91,    26,
-      86,    86,    27,    86,    24,    22,    22,    27,    79,    79,
-      86,    10,    27,    79,    86,    22,    79
+      89,    89,    89,    89,    89,    89,    89,    26,    69,    91,
+      86,     3,    26,    25,     9,    11,    12,    13,    24,    27,
+      66,    70,    76,    77,    78,    79,    80,    81,    82,    83,
+      84,    85,    86,    27,    27,    22,    28,    22,    24,    28,
+      26,     3,    21,    21,    27,    86,    21,     8,    24,    66,
+      78,    24,    79,    27,    86,    27,    91,    26,    86,    86,
+      27,    86,    24,    22,    22,    27,    79,    79,    86,    10,
+      27,    79,    86,    22,    79
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
@@ -1061,7 +919,7 @@ static const yytype_int8 yyr2[] =
        1,     2,     1,     2,     1,     1,     1,     1,     1,     2,
        1,     5,     7,     1,     1,     5,     9,     2,     3,     3,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
-       1,     1,     1,     4,     3,     3,     3,     3,     3,     3,
+       1,     1,     1,     2,     3,     3,     3,     3,     3,     3,
        3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
        3,     3,     4,     3,     2,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     4,     0,     1,     3,
@@ -1533,101 +1391,103 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: declarationList  */
-#line 135 "parser.y"
+#line 133 "parser.y"
                                     { root = move((yyvsp[0].declarationNodeVec)); }
-#line 1539 "parser.tab.c"
+#line 1397 "parser.tab.c"
     break;
 
   case 3: /* declarationList: declarationList declaration  */
-#line 138 "parser.y"
+#line 136 "parser.y"
                                                  {
-                        (yyvsp[-1].declarationNodeVec)->push_back(move((yyvsp[0].declarationNode)));
+                        (yyvsp[-1].declarationNodeVec)->push_back(move(*(yyvsp[0].declarationNode)));
                         (yyval.declarationNodeVec) = move((yyvsp[-1].declarationNodeVec));
                     }
-#line 1548 "parser.tab.c"
+#line 1406 "parser.tab.c"
     break;
 
   case 4: /* declarationList: declaration  */
-#line 142 "parser.y"
+#line 140 "parser.y"
                                     {
-                        (yyval.declarationNodeVec) = make_unique<vector<unique_ptr<declarationNode>>>();
-                        (yyval.declarationNodeVec)->push_back(move((yyvsp[0].declarationNode)));
+                        (yyval.declarationNodeVec) = make_unique<vector<unique_ptr<DeclarationNode>>>();
+                        (yyval.declarationNodeVec)->push_back(move(*(yyvsp[0].declarationNode)));
                     }
-#line 1557 "parser.tab.c"
+#line 1415 "parser.tab.c"
     break;
 
   case 5: /* declaration: varDeclaration  */
-#line 148 "parser.y"
-                                   { (yyval.declarationNode) = make_unique<declarationNode>(move((yyvsp[0].varDeclarationNode))); }
-#line 1563 "parser.tab.c"
+#line 146 "parser.y"
+                                   { (yyval.declarationNode) = &make_unique<DeclarationNode>(move((yyvsp[0].varDeclarationNode))); }
+#line 1421 "parser.tab.c"
     break;
 
   case 6: /* declaration: funDeclaration  */
-#line 149 "parser.y"
-                                      { (yyval.declarationNode) = make_unique<declarationNode>(move((yyvsp[0].funDeclarationNode))); }
-#line 1569 "parser.tab.c"
+#line 147 "parser.y"
+                                      { (yyval.declarationNode) = &make_unique<DeclarationNode>(move((yyvsp[0].funDeclarationNode))); }
+#line 1427 "parser.tab.c"
     break;
 
   case 7: /* varDeclaration: baseType idList SEMICOLON  */
-#line 152 "parser.y"
-                                              { (yyval.varDeclarationNode) = make_unique<varDeclarationNode>(move((yyvsp[-2].stringNode)), move((yyvsp[-1].idListNodeVec)), nullptr, nullptr); }
-#line 1575 "parser.tab.c"
+#line 150 "parser.y"
+                                              { 
+                        (yyval.varDeclarationNode) = make_unique<VarDeclarationNode>(move((yyvsp[-2].stringNode)), move((yyvsp[-1].idListNodeVec)), nullptr, nullptr);
+                    }
+#line 1435 "parser.tab.c"
     break;
 
   case 8: /* varDeclaration: baseType ID arrayPost SEMICOLON  */
 #line 153 "parser.y"
                                                       {
-                        (yyval.varDeclarationNode) = make_unique<vector<unique_ptr<idListNode>>>();
-                        (yyval.varDeclarationNode)-> push_back(move((yyvsp[-2].type_id)));
-                        (yyval.varDeclarationNode) = make_unique<varDeclarationNode>(move((yyvsp[-3].stringNode)), move((yyval.varDeclarationNode)), move((yyvsp[-1].intVec)), nullptr);
+                        (yyval.varDeclarationNode) = make_unique<vector<unique_ptr<IdListNode>>>();
+                        (yyval.varDeclarationNode)-> push_back( make_unique<IdListNode>(make_unique<string>((yyvsp[-2].type_id)), nullptr) );
+                        (yyval.varDeclarationNode) = make_unique<VarDeclarationNode>(move((yyvsp[-3].stringNode)), move((yyval.varDeclarationNode)), move((yyvsp[-1].intVec)), nullptr);
                     }
-#line 1585 "parser.tab.c"
+#line 1445 "parser.tab.c"
     break;
 
   case 9: /* varDeclaration: baseType ID arrayPost ASSIGN LC arrayConstList RC SEMICOLON  */
 #line 158 "parser.y"
                                                                                       {
-                        (yyval.varDeclarationNode) = make_unique<vector<unique_ptr<idListNode>>>();
-                        (yyval.varDeclarationNode)-> push_back(move((yyvsp[-6].type_id)));
-                        (yyval.varDeclarationNode) = make_unique<varDeclarationNode>(move((yyvsp[-7].stringNode)), move((yyval.varDeclarationNode)), move((yyvsp[-5].intVec)), move((yyvsp[-2].singleNodeVec)));
+                        (yyval.varDeclarationNode) = make_unique<vector<unique_ptr<IdListNode>>>();
+                        (yyval.varDeclarationNode)-> push_back( make_unique<IdListNode>(make_unique<string>((yyvsp[-6].type_id)), nullptr) );
+                        (yyval.varDeclarationNode) = make_unique<VarDeclarationNode>(move((yyvsp[-7].stringNode)), move((yyval.varDeclarationNode)), move((yyvsp[-5].intVec)), move((yyvsp[-2].singleNodeVec)));
                     }
-#line 1595 "parser.tab.c"
+#line 1455 "parser.tab.c"
     break;
 
   case 10: /* idList: idList COMMA ID  */
 #line 165 "parser.y"
                                     { 
-                        (yyvsp[-2].idListNodeVec)->push_back(make_unique<idListNode>(make_unique<string>((yyvsp[0].type_id)), nullptr));
+                        (yyvsp[-2].idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[0].type_id)), nullptr));
                         (yyval.idListNodeVec) = move((yyvsp[-2].idListNodeVec));
                     }
-#line 1604 "parser.tab.c"
+#line 1464 "parser.tab.c"
     break;
 
   case 11: /* idList: idList COMMA ID ASSIGN expression  */
 #line 169 "parser.y"
                                                         {
-                        (yyvsp[-4].idListNodeVec)->push_back(make_unique<idListNode>(make_unique<string>((yyvsp[-2].type_id)), move((yyvsp[0].expressionNode))));
+                        (yyvsp[-4].idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[-2].type_id)), move((yyvsp[0].expressionNode))));
                         (yyval.idListNodeVec) = move((yyvsp[-4].idListNodeVec));
                     }
-#line 1613 "parser.tab.c"
+#line 1473 "parser.tab.c"
     break;
 
   case 12: /* idList: ID  */
 #line 173 "parser.y"
                          { 
-                        (yyval.idListNodeVec) = make_unique<vector<unique_ptr<idListNode>>>();
-                        (yyval.idListNodeVec)->push_back(make_unique<idListNode>(make_unique<string>((yyvsp[0].type_id)), nullptr)); 
+                        (yyval.idListNodeVec) = make_unique<vector<unique_ptr<IdListNode>>>();
+                        (yyval.idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[0].type_id)), nullptr)); 
                     }
-#line 1622 "parser.tab.c"
+#line 1482 "parser.tab.c"
     break;
 
   case 13: /* idList: ID ASSIGN expression  */
 #line 177 "parser.y"
                                            {
-                        (yyval.idListNodeVec) = make_unique<vector<unique_ptr<idListNode>>>();
-                        (yyval.idListNodeVec)->push_back(make_unique<idListNode>(make_unique<string>((yyvsp[-2].type_id)), move((yyvsp[0].expressionNode)))); 
+                        (yyval.idListNodeVec) = make_unique<vector<unique_ptr<IdListNode>>>();
+                        (yyval.idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[-2].type_id)), move((yyvsp[0].expressionNode)))); 
                     }
-#line 1631 "parser.tab.c"
+#line 1491 "parser.tab.c"
     break;
 
   case 14: /* arrayPost: LB INT RB  */
@@ -1636,7 +1496,7 @@ yyreduce:
                         (yyval.intVec) = make_unique<vector<int>>();
                         (yyval.intVec)->push_back((yyvsp[-1].type_int));
                     }
-#line 1640 "parser.tab.c"
+#line 1500 "parser.tab.c"
     break;
 
   case 15: /* arrayPost: arrayPost LB INT RB  */
@@ -1645,7 +1505,7 @@ yyreduce:
                         (yyvsp[-3].intVec)->push_back((yyvsp[-1].type_int));
                         (yyval.intVec) = move((yyvsp[-3].intVec));
                     }
-#line 1649 "parser.tab.c"
+#line 1509 "parser.tab.c"
     break;
 
   case 16: /* arrayConstList: arrayConstList COMMA single  */
@@ -1654,82 +1514,82 @@ yyreduce:
                         (yyvsp[-2].singleNodeVec)->push_back(move((yyvsp[0].singleNode)));
                         (yyval.singleNodeVec) = move((yyvsp[-2].singleNodeVec));
                     }
-#line 1658 "parser.tab.c"
+#line 1518 "parser.tab.c"
     break;
 
   case 17: /* arrayConstList: single  */
 #line 213 "parser.y"
                              {
-                        (yyval.singleNodeVec) = make_unique<vector<unique_ptr<singleNode>>>();
+                        (yyval.singleNodeVec) = make_unique<vector<unique_ptr<SingleNode>>>();
                         (yyval.singleNodeVec)->push_back(move((yyvsp[0].singleNode)));
                     }
-#line 1667 "parser.tab.c"
+#line 1527 "parser.tab.c"
     break;
 
   case 18: /* baseType: INT_TYPE  */
 #line 218 "parser.y"
-                             { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1673 "parser.tab.c"
+                             { (yyval.stringNode) = make_unique<string>("INT_TYPE"); }
+#line 1533 "parser.tab.c"
     break;
 
   case 19: /* baseType: DOUBLE_TYPE  */
 #line 219 "parser.y"
-                                  { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1679 "parser.tab.c"
+                                  { (yyval.stringNode) = make_unique<string>("DOUBLE_TYPE"); }
+#line 1539 "parser.tab.c"
     break;
 
   case 20: /* baseType: FLOAT_TYPE  */
 #line 220 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1685 "parser.tab.c"
+                                 { (yyval.stringNode) = make_unique<string>("FLOAT_TYPE"); }
+#line 1545 "parser.tab.c"
     break;
 
   case 21: /* baseType: CHAR_TYPE  */
 #line 221 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1691 "parser.tab.c"
+                                { (yyval.stringNode) = make_unique<string>("CHAR_TYPE"); }
+#line 1551 "parser.tab.c"
     break;
 
   case 22: /* baseType: BOOL_TYPE  */
 #line 222 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1697 "parser.tab.c"
+                                { (yyval.stringNode) = make_unique<string>("BOOL_TYPE"); }
+#line 1557 "parser.tab.c"
     break;
 
   case 23: /* funDeclaration: baseType ID LP params RP compoundStmt  */
 #line 225 "parser.y"
-                                                          { (yyval.funDeclarationNode) = make_unique<funDeclarationNode>(make_unique<string>((yyvsp[-5].stringNode)), move((yyvsp[-2].paramVec)), false) }
-#line 1703 "parser.tab.c"
+                                                          { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(make_unique<string>((yyvsp[-5].stringNode)), make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), move((yyvsp[0].compoundStmtNode)), false) }
+#line 1563 "parser.tab.c"
     break;
 
   case 24: /* funDeclaration: VOID_TYPE ID LP params RP compoundStmt  */
 #line 226 "parser.y"
-                                                             { (yyval.funDeclarationNode) = make_unique<funDeclarationNode>(nullptr, move((yyvsp[-2].paramVec)), false) }
-#line 1709 "parser.tab.c"
+                                                             { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(nullptr, make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), move((yyvsp[0].compoundStmtNode)), false) }
+#line 1569 "parser.tab.c"
     break;
 
   case 25: /* funDeclaration: EXTERN_TYPE baseType ID LP params RP SEMICOLON  */
 #line 227 "parser.y"
-                                                                     { (yyval.funDeclarationNode) = make_unique<funDeclarationNode>(make_unique<string>((yyvsp[-5].stringNode)), move((yyvsp[-2].paramVec)), true) }
-#line 1715 "parser.tab.c"
+                                                                     { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(make_unique<string>((yyvsp[-5].stringNode)), make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), nullptr, true) }
+#line 1575 "parser.tab.c"
     break;
 
   case 26: /* funDeclaration: EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON  */
 #line 228 "parser.y"
-                                                                      { (yyval.funDeclarationNode) = make_unique<funDeclarationNode>(nullptr, move((yyvsp[-2].paramVec)), true) }
-#line 1721 "parser.tab.c"
+                                                                      { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(nullptr, make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), nullptr, true) }
+#line 1581 "parser.tab.c"
     break;
 
   case 27: /* params: paramList  */
 #line 231 "parser.y"
                               { (yyval.paramVec) = move((yyvsp[0].paramVec)) }
-#line 1727 "parser.tab.c"
+#line 1587 "parser.tab.c"
     break;
 
   case 28: /* params: VOID_TYPE  */
 #line 232 "parser.y"
                                 { (yyval.paramVec) = nullptr; }
-#line 1733 "parser.tab.c"
+#line 1593 "parser.tab.c"
     break;
 
   case 29: /* paramList: paramList COMMA param  */
@@ -1738,28 +1598,28 @@ yyreduce:
                         (yyvsp[-2].paramVec)->push_back(move((yyvsp[0].paramNode)));
                         (yyval.paramVec) = move((yyvsp[-2].paramVec));
                     }
-#line 1742 "parser.tab.c"
+#line 1602 "parser.tab.c"
     break;
 
   case 30: /* paramList: param  */
 #line 239 "parser.y"
                              {
-                        (yyval.paramVec) = make_unique<vector<unique_ptr<paramNode>>>();
+                        (yyval.paramVec) = make_unique<vector<unique_ptr<ParamNode>>>();
                         (yyval.paramVec)->push_back(move((yyvsp[0].paramNode)));
                     }
-#line 1751 "parser.tab.c"
+#line 1611 "parser.tab.c"
     break;
 
   case 31: /* param: baseType ID  */
 #line 245 "parser.y"
-                                { (yyval.paramNode) = make_unique<paramNode>(move((yyvsp[-1].stringNode)), move((yyvsp[0].type_id)), nullptr) }
-#line 1757 "parser.tab.c"
+                                { (yyval.paramNode) = make_unique<ParamNode>(move((yyvsp[-1].stringNode)), move((yyvsp[0].type_id)), nullptr) }
+#line 1617 "parser.tab.c"
     break;
 
   case 32: /* param: baseType ID arrayPostParam  */
 #line 246 "parser.y"
-                                                 { (yyval.paramNode) = make_unique<paramNode>(move((yyvsp[-2].stringNode)), move((yyvsp[-1].type_id)), move((yyvsp[0].intVec))) }
-#line 1763 "parser.tab.c"
+                                                 { (yyval.paramNode) = make_unique<ParamNode>(move((yyvsp[-2].stringNode)), move((yyvsp[-1].type_id)), move((yyvsp[0].intVec))) }
+#line 1623 "parser.tab.c"
     break;
 
   case 33: /* arrayPostParam: LB RB  */
@@ -1767,7 +1627,7 @@ yyreduce:
                           {
                         (yyval.intVec) = make_unique<vector<int>>();
                     }
-#line 1771 "parser.tab.c"
+#line 1631 "parser.tab.c"
     break;
 
   case 34: /* arrayPostParam: LB INT RB  */
@@ -1775,7 +1635,7 @@ yyreduce:
                                  {
                         (yyval.intVec) = make_unique<vector<int>>();
                     }
-#line 1779 "parser.tab.c"
+#line 1639 "parser.tab.c"
     break;
 
   case 35: /* arrayPostParam: arrayPostParam LB INT RB  */
@@ -1784,40 +1644,40 @@ yyreduce:
                         (yyvsp[-3].intVec)->push_back((yyvsp[-1].type_int));
                         (yyval.intVec) = move((yyvsp[-3].intVec));
                     }
-#line 1788 "parser.tab.c"
+#line 1648 "parser.tab.c"
     break;
 
   case 36: /* compoundStmt: LC localDeclarations statementList RC  */
 #line 261 "parser.y"
-                                                          { (yyval.compoundStmtNode) = make_unique<compoundStmtNode>(move((yyvsp[-2].varDeclarationNodeVec)), move((yyvsp[-1].statementNodeVec))); }
-#line 1794 "parser.tab.c"
+                                                          { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(move((yyvsp[-2].varDeclarationNodeVec)), move((yyvsp[-1].statementNodeVec))); }
+#line 1654 "parser.tab.c"
     break;
 
   case 37: /* compoundStmt: LC localDeclarations RC  */
 #line 262 "parser.y"
-                                              { (yyval.compoundStmtNode) = make_unique<compoundStmtNode>(move((yyvsp[-1].varDeclarationNodeVec)), nullptr); }
-#line 1800 "parser.tab.c"
+                                              { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(move((yyvsp[-1].varDeclarationNodeVec)), nullptr); }
+#line 1660 "parser.tab.c"
     break;
 
   case 38: /* compoundStmt: LC statementList RC  */
 #line 263 "parser.y"
-                                          { (yyval.compoundStmtNode) = make_unique<compoundStmtNode>(nullptr, move((yyvsp[-1].statementNodeVec))); }
-#line 1806 "parser.tab.c"
+                                          { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(nullptr, move((yyvsp[-1].statementNodeVec))); }
+#line 1666 "parser.tab.c"
     break;
 
   case 39: /* compoundStmt: LC RC  */
 #line 264 "parser.y"
-                            { (yyval.compoundStmtNode) = make_unique<compoundStmtNode>(nullptr, nullptr); }
-#line 1812 "parser.tab.c"
+                            { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(nullptr, nullptr); }
+#line 1672 "parser.tab.c"
     break;
 
   case 40: /* localDeclarations: varDeclaration  */
 #line 267 "parser.y"
                                    {
-                        (yyval.varDeclarationNodeVec) = make_unique<vector<unique_ptr<varDeclarationNode>>>();
+                        (yyval.varDeclarationNodeVec) = make_unique<vector<unique_ptr<VarDeclarationNode>>>();
                         (yyval.varDeclarationNodeVec)->push_back(move((yyvsp[0].varDeclarationNode)));
                     }
-#line 1821 "parser.tab.c"
+#line 1681 "parser.tab.c"
     break;
 
   case 41: /* localDeclarations: localDeclarations varDeclaration  */
@@ -1826,16 +1686,16 @@ yyreduce:
                         (yyvsp[-1].varDeclarationNodeVec)->push_back(move((yyvsp[0].varDeclarationNode)));
                         (yyval.varDeclarationNodeVec) = move((yyvsp[-1].varDeclarationNodeVec));
                     }
-#line 1830 "parser.tab.c"
+#line 1690 "parser.tab.c"
     break;
 
   case 42: /* statementList: statement  */
 #line 277 "parser.y"
                               { 
-                        (yyval.statementNodeVec) = make_unique<vector<unique_ptr<statementNode>>>();
+                        (yyval.statementNodeVec) = make_unique<vector<unique_ptr<StatementNode>>>();
                         (yyval.statementNodeVec)->push_back(move((yyvsp[0].statementNode)));
                     }
-#line 1839 "parser.tab.c"
+#line 1699 "parser.tab.c"
     break;
 
   case 43: /* statementList: statementList statement  */
@@ -1844,403 +1704,403 @@ yyreduce:
                         (yyvsp[-1].statementNodeVec)->push_back(move((yyvsp[0].statementNode)));
                         (yyval.statementNodeVec) = move((yyvsp[-1].statementNodeVec));
                     }
-#line 1848 "parser.tab.c"
+#line 1708 "parser.tab.c"
     break;
 
   case 44: /* statement: expressionStmt  */
 #line 287 "parser.y"
-                                   { (yyval.statementNode) = make_unique<statementNode>(move((yyvsp[0].expressionNode))); }
-#line 1854 "parser.tab.c"
+                                   { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].expressionNode))); }
+#line 1714 "parser.tab.c"
     break;
 
   case 45: /* statement: compoundStmt  */
 #line 288 "parser.y"
-                                   { (yyval.statementNode) = make_unique<statementNode>(move((yyvsp[0].compoundStmtNode))); }
-#line 1860 "parser.tab.c"
+                                   { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].compoundStmtNode))); }
+#line 1720 "parser.tab.c"
     break;
 
   case 46: /* statement: selectionStmt  */
 #line 289 "parser.y"
-                                    { (yyval.statementNode) = make_unique<statementNode>(move((yyvsp[0].selectionStmtNode))); }
-#line 1866 "parser.tab.c"
+                                    { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].selectionStmtNode))); }
+#line 1726 "parser.tab.c"
     break;
 
   case 47: /* statement: iterationStmt  */
 #line 290 "parser.y"
-                                    { (yyval.statementNode) = make_unique<statementNode>(move((yyvsp[0].iterationStmtNode))); }
-#line 1872 "parser.tab.c"
+                                    { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].iterationStmtNode))); }
+#line 1732 "parser.tab.c"
     break;
 
   case 48: /* statement: returnStmt  */
 #line 291 "parser.y"
-                                 { (yyval.statementNode) = make_unique<statementNode>(move((yyvsp[0].returnStmtNode))); }
-#line 1878 "parser.tab.c"
+                                 { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].returnStmtNode))); }
+#line 1738 "parser.tab.c"
     break;
 
   case 49: /* expressionStmt: expression SEMICOLON  */
 #line 294 "parser.y"
                                          { (yyval.expressionNode) = move((yyvsp[-1].expressionNode)); }
-#line 1884 "parser.tab.c"
+#line 1744 "parser.tab.c"
     break;
 
   case 50: /* expressionStmt: SEMICOLON  */
 #line 295 "parser.y"
                                 { (yyval.expressionNode) = nullptr; }
-#line 1890 "parser.tab.c"
+#line 1750 "parser.tab.c"
     break;
 
   case 51: /* selectionStmt: IF LP expression RP statement  */
 #line 298 "parser.y"
-                                                  { (yyval.selectionStmtNode) = make_unique<selectionStmtNode>(move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)), nullptr); }
-#line 1896 "parser.tab.c"
+                                                  { (yyval.selectionStmtNode) = make_unique<SelectionStmtNode>(move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)), nullptr); }
+#line 1756 "parser.tab.c"
     break;
 
   case 52: /* selectionStmt: IF LP expression RP statement ELSE statement  */
 #line 299 "parser.y"
-                                                                   { (yyval.selectionStmtNode) = make_unique<selectionStmtNode>(move((yyvsp[-4].expressionNode)), move((yyvsp[-2].statementNode)), move((yyvsp[0].statementNode))); }
-#line 1902 "parser.tab.c"
+                                                                   { (yyval.selectionStmtNode) = make_unique<SelectionStmtNode>(move((yyvsp[-4].expressionNode)), move((yyvsp[-2].statementNode)), move((yyvsp[0].statementNode))); }
+#line 1762 "parser.tab.c"
     break;
 
   case 53: /* iterationStmt: whileStmt  */
 #line 302 "parser.y"
-                              { (yyval.iterationStmtNode) = make_unique<iterationStmtNode>(move((yyvsp[0].whileStmtNode))); }
-#line 1908 "parser.tab.c"
+                              { (yyval.iterationStmtNode) = make_unique<IterationStmtNode>(move((yyvsp[0].whileStmtNode))); }
+#line 1768 "parser.tab.c"
     break;
 
   case 54: /* iterationStmt: forStmt  */
 #line 303 "parser.y"
-                              { (yyval.iterationStmtNode) = make_unique<iterationStmtNode>(move((yyvsp[0].forStmtNode))); }
-#line 1914 "parser.tab.c"
+                              { (yyval.iterationStmtNode) = make_unique<IterationStmtNode>(move((yyvsp[0].forStmtNode))); }
+#line 1774 "parser.tab.c"
     break;
 
   case 55: /* whileStmt: WHILE LP expression RP statement  */
 #line 306 "parser.y"
                                                      {
-                        (yyval.whileStmtNode) = make_unique<whileStmtNode>(move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)));
+                        (yyval.whileStmtNode) = make_unique<WhileStmtNode>(move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)));
                     }
-#line 1922 "parser.tab.c"
+#line 1782 "parser.tab.c"
     break;
 
   case 56: /* forStmt: FOR LP expression SEMICOLON expression SEMICOLON expression RP statement  */
 #line 311 "parser.y"
                                                                                              {
-                        (yyval.forStmtNode) = make_unique<forStmtNode>(move((yyvsp[-6].expressionNode)), move((yyvsp[-4].expressionNode)), move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)));
+                        (yyval.forStmtNode) = make_unique<ForStmtNode>(move((yyvsp[-6].expressionNode)), move((yyvsp[-4].expressionNode)), move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)));
                     }
-#line 1930 "parser.tab.c"
+#line 1790 "parser.tab.c"
     break;
 
   case 57: /* returnStmt: RETURN SEMICOLON  */
 #line 316 "parser.y"
                                      { (yyval.returnStmtNode) = nullptr; }
-#line 1936 "parser.tab.c"
+#line 1796 "parser.tab.c"
     break;
 
   case 58: /* returnStmt: RETURN expression SEMICOLON  */
 #line 317 "parser.y"
-                                                  { (yyval.returnStmtNode) = make_unique<returnStmtNode>(move((yyvsp[-1].expressionNode))); }
-#line 1942 "parser.tab.c"
+                                                  { (yyval.returnStmtNode) = make_unique<ReturnStmtNode>(move((yyvsp[-1].expressionNode))); }
+#line 1802 "parser.tab.c"
     break;
 
   case 59: /* expression: var assop expression  */
 #line 320 "parser.y"
-                                         { (yyval.expressionNode) = make_unique<expressionNode>(move((yyvsp[-1].stringNode)), move((yyvsp[-2].varNode)), move((yyvsp[0].expressionNode))); }
-#line 1948 "parser.tab.c"
+                                         { (yyval.expressionNode) = make_unique<ExpressionNode>(move((yyvsp[-1].stringNode)), move((yyvsp[-2].varNode)), move((yyvsp[0].expressionNode))); }
+#line 1808 "parser.tab.c"
     break;
 
   case 60: /* expression: operand  */
 #line 321 "parser.y"
-                              { (yyval.expressionNode) = make_unique<expressionNode>(nullptr, nullptr, move((yyvsp[0].operandNode))); }
-#line 1954 "parser.tab.c"
+                              { (yyval.expressionNode) = make_unique<ExpressionNode>(nullptr, nullptr, move((yyvsp[0].operandNode))); }
+#line 1814 "parser.tab.c"
     break;
 
   case 61: /* assop: ASSIGN  */
 #line 324 "parser.y"
-                           { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1960 "parser.tab.c"
+                           { (yyval.stringNode) = make_unique<string>("ASSIGN"); }
+#line 1820 "parser.tab.c"
     break;
 
   case 62: /* assop: PLUSASSIGN  */
 #line 325 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1966 "parser.tab.c"
+                                 { (yyval.stringNode) = make_unique<string>("PLUSASSIGN"); }
+#line 1826 "parser.tab.c"
     break;
 
   case 63: /* assop: MINUSASSIGN  */
 #line 326 "parser.y"
-                                  { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1972 "parser.tab.c"
+                                  { (yyval.stringNode) = make_unique<string>("MINUSASSIGN"); }
+#line 1832 "parser.tab.c"
     break;
 
   case 64: /* assop: MULTASSIGN  */
 #line 327 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1978 "parser.tab.c"
+                                 { (yyval.stringNode) = make_unique<string>("MULTASSIGN"); }
+#line 1838 "parser.tab.c"
     break;
 
   case 65: /* assop: DIVASSIGN  */
 #line 328 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1984 "parser.tab.c"
+                                { (yyval.stringNode) = make_unique<string>("DIVASSIGN"); }
+#line 1844 "parser.tab.c"
     break;
 
   case 66: /* assop: MODASSIGN  */
 #line 329 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1990 "parser.tab.c"
+                                { (yyval.stringNode) = make_unique<string>("MODASSIGN"); }
+#line 1850 "parser.tab.c"
     break;
 
   case 67: /* assop: BANDASSIGN  */
 #line 330 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 1996 "parser.tab.c"
+                                 { (yyval.stringNode) = make_unique<string>("BANDASSIGN"); }
+#line 1856 "parser.tab.c"
     break;
 
   case 68: /* assop: BORASSIGN  */
 #line 331 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 2002 "parser.tab.c"
+                                { (yyval.stringNode) = make_unique<string>("BORASSIGN"); }
+#line 1862 "parser.tab.c"
     break;
 
   case 69: /* assop: BXORASSIGN  */
 #line 332 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 2008 "parser.tab.c"
+                                 { (yyval.stringNode) = make_unique<string>("BXORASSIGN"); }
+#line 1868 "parser.tab.c"
     break;
 
   case 70: /* assop: SLASSIGN  */
 #line 333 "parser.y"
-                               { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 2014 "parser.tab.c"
+                               { (yyval.stringNode) = make_unique<string>("SLASSIGN"); }
+#line 1874 "parser.tab.c"
     break;
 
   case 71: /* assop: SRASSIGN  */
 #line 334 "parser.y"
-                               { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 2020 "parser.tab.c"
+                               { (yyval.stringNode) = make_unique<string>("SRASSIGN"); }
+#line 1880 "parser.tab.c"
     break;
 
   case 72: /* var: ID  */
 #line 337 "parser.y"
-                       { (yyval.varNode) = make_unique<varNode>(make_unique<string>((yyvsp[0].type_id)), nullptr); }
-#line 2026 "parser.tab.c"
+                       { (yyval.varNode) = make_unique<VarNode>(make_unique<string>((yyvsp[0].type_id)), nullptr); }
+#line 1886 "parser.tab.c"
     break;
 
-  case 73: /* var: ID LB expression RB  */
+  case 73: /* var: ID arrayPost  */
 #line 338 "parser.y"
-                                          { (yyval.varNode) = make_unique<varNode>(make_unique<string>((yyvsp[-3].type_id)), move((yyvsp[-1].expressionNode))); }
-#line 2032 "parser.tab.c"
+                                   { (yyval.varNode) = make_unique<VarNode>(make_unique<string>((yyvsp[-1].type_id)), move((yyvsp[0].intVec))); }
+#line 1892 "parser.tab.c"
     break;
 
   case 74: /* operand: operand LOR operand  */
 #line 341 "parser.y"
-                                        { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2038 "parser.tab.c"
+                                        { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LOR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1898 "parser.tab.c"
     break;
 
   case 75: /* operand: operand LAND operand  */
 #line 342 "parser.y"
-                                           { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2044 "parser.tab.c"
+                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LAND"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1904 "parser.tab.c"
     break;
 
   case 76: /* operand: operand BOR operand  */
 #line 343 "parser.y"
-                                          { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2050 "parser.tab.c"
+                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("BOR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1910 "parser.tab.c"
     break;
 
   case 77: /* operand: operand BXOR operand  */
 #line 344 "parser.y"
-                                           { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2056 "parser.tab.c"
+                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("BXOR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1916 "parser.tab.c"
     break;
 
   case 78: /* operand: operand BAND operand  */
 #line 345 "parser.y"
-                                           { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2062 "parser.tab.c"
+                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("BAND"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1922 "parser.tab.c"
     break;
 
   case 79: /* operand: operand EQ operand  */
 #line 346 "parser.y"
-                                         { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2068 "parser.tab.c"
+                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("EQ"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1928 "parser.tab.c"
     break;
 
   case 80: /* operand: operand NEQ operand  */
 #line 347 "parser.y"
-                                          { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2074 "parser.tab.c"
+                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("NEQ"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1934 "parser.tab.c"
     break;
 
   case 81: /* operand: operand LT operand  */
 #line 348 "parser.y"
-                                         { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2080 "parser.tab.c"
+                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LT"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1940 "parser.tab.c"
     break;
 
   case 82: /* operand: operand GT operand  */
 #line 349 "parser.y"
-                                         { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2086 "parser.tab.c"
+                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("GT"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1946 "parser.tab.c"
     break;
 
   case 83: /* operand: operand LTE operand  */
 #line 350 "parser.y"
-                                          { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2092 "parser.tab.c"
+                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LTE"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1952 "parser.tab.c"
     break;
 
   case 84: /* operand: operand GTE operand  */
 #line 351 "parser.y"
-                                          { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2098 "parser.tab.c"
+                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("GTE"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1958 "parser.tab.c"
     break;
 
   case 85: /* operand: operand SL operand  */
 #line 352 "parser.y"
-                                         { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2104 "parser.tab.c"
+                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("SL"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1964 "parser.tab.c"
     break;
 
   case 86: /* operand: operand SR operand  */
 #line 353 "parser.y"
-                                         { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2110 "parser.tab.c"
+                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("SR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1970 "parser.tab.c"
     break;
 
   case 87: /* operand: operand PLUS operand  */
 #line 354 "parser.y"
-                                           { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2116 "parser.tab.c"
+                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("PLUS"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1976 "parser.tab.c"
     break;
 
   case 88: /* operand: operand MINUS operand  */
 #line 355 "parser.y"
-                                            { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2122 "parser.tab.c"
+                                            { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("MINUS"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1982 "parser.tab.c"
     break;
 
   case 89: /* operand: operand MULT operand  */
 #line 356 "parser.y"
-                                           { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2128 "parser.tab.c"
+                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("MULT"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1988 "parser.tab.c"
     break;
 
   case 90: /* operand: operand DIV operand  */
 #line 357 "parser.y"
-                                          { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2134 "parser.tab.c"
+                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("DIV"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 1994 "parser.tab.c"
     break;
 
   case 91: /* operand: operand MOD operand  */
 #line 358 "parser.y"
-                                          { (yyval.operandNode) = make_unique<operandNode>(make_unique<string>((yyvsp[-1].string)), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
-#line 2140 "parser.tab.c"
+                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("MOD"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 2000 "parser.tab.c"
     break;
 
   case 92: /* operand: prefix LP operand RP  */
 #line 359 "parser.y"
-                                           { (yyval.operandNode) = make_unique<operandNode>(move((yyvsp[-3].stringNode)), move((yyvsp[-1].operandNode)), nullptr); }
-#line 2146 "parser.tab.c"
+                                           { (yyval.operandNode) = make_unique<OperandNode>(move((yyvsp[-3].stringNode)), move((yyvsp[-1].operandNode)), nullptr); }
+#line 2006 "parser.tab.c"
     break;
 
   case 93: /* operand: LP operand RP  */
 #line 360 "parser.y"
-                                    { (yyval.operandNode) = make_unique<operandNode>(nullptr, move((yyvsp[-1].operandNode)), nullptr); }
-#line 2152 "parser.tab.c"
+                                    { (yyval.operandNode) = make_unique<OperandNode>(nullptr, move((yyvsp[-1].operandNode)), nullptr); }
+#line 2012 "parser.tab.c"
     break;
 
   case 94: /* operand: prefix single  */
 #line 361 "parser.y"
-                                    {  (yyval.operandNode) = make_unique<operandNode>(move((yyvsp[-1].stringNode)), move((yyvsp[0].singleNode)), nullptr); }
-#line 2158 "parser.tab.c"
+                                    {  (yyval.operandNode) = make_unique<OperandNode>(move((yyvsp[-1].stringNode)), move((yyvsp[0].singleNode)), nullptr); }
+#line 2018 "parser.tab.c"
     break;
 
   case 95: /* operand: single  */
 #line 362 "parser.y"
-                             { (yyval.operandNode) = make_unique<operandNode>(nullptr, move((yyvsp[0].singleNode)), nullptr);  }
-#line 2164 "parser.tab.c"
+                             { (yyval.operandNode) = make_unique<OperandNode>(nullptr, move((yyvsp[0].singleNode)), nullptr);  }
+#line 2024 "parser.tab.c"
     break;
 
   case 96: /* prefix: BNOT  */
 #line 366 "parser.y"
-                         { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 2170 "parser.tab.c"
+                         { (yyval.stringNode) = make_unique<string>("BNOT"); }
+#line 2030 "parser.tab.c"
     break;
 
   case 97: /* prefix: LNOT  */
 #line 367 "parser.y"
-                            { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 2176 "parser.tab.c"
+                            { (yyval.stringNode) = make_unique<string>("LNOT"); }
+#line 2036 "parser.tab.c"
     break;
 
   case 98: /* prefix: MINUS  */
 #line 368 "parser.y"
-                            { (yyval.stringNode) = make_unique<string>((yyvsp[0].string)); }
-#line 2182 "parser.tab.c"
+                            { (yyval.stringNode) = make_unique<string>("MINUS"); }
+#line 2042 "parser.tab.c"
     break;
 
   case 99: /* single: var  */
 #line 371 "parser.y"
-                        { (yyval.singleNode) = make_unique<singleNode>( make_unique<string>((yyvsp[0].varNode)) ); }
-#line 2188 "parser.tab.c"
+                        { (yyval.singleNode) = make_unique<SingleNode>( move((yyvsp[0].varNode)) ); }
+#line 2048 "parser.tab.c"
     break;
 
   case 100: /* single: call  */
 #line 372 "parser.y"
-                           { (yyval.singleNode) = make_unique<singleNode>((yyvsp[0].callNode)); }
-#line 2194 "parser.tab.c"
+                           { (yyval.singleNode) = make_unique<SingleNode>( move((yyvsp[0].callNode)) ); }
+#line 2054 "parser.tab.c"
     break;
 
   case 101: /* single: INT  */
 #line 373 "parser.y"
-                          { (yyval.singleNode) = make_unique<singleNode>((yyvsp[0].type_int)); }
-#line 2200 "parser.tab.c"
+                          { (yyval.singleNode) = make_unique<SingleNode>(make_unique<IntNode>((yyvsp[0].type_int))); }
+#line 2060 "parser.tab.c"
     break;
 
   case 102: /* single: FLOAT  */
 #line 374 "parser.y"
-                            { (yyval.singleNode) = make_unique<singleNode>((yyvsp[0].type_float)); }
-#line 2206 "parser.tab.c"
+                            { (yyval.singleNode) = make_unique<SingleNode>(make_unique<FloatNode>((yyvsp[0].type_float))); }
+#line 2066 "parser.tab.c"
     break;
 
   case 103: /* single: CHAR  */
 #line 375 "parser.y"
-                           { (yyval.singleNode) = make_unique<singleNode>((yyvsp[0].type_char)); }
-#line 2212 "parser.tab.c"
+                           { (yyval.singleNode) = make_unique<SingleNode>(make_unique<CharNode>((yyvsp[0].type_char))); }
+#line 2072 "parser.tab.c"
     break;
 
   case 104: /* single: TRUE  */
 #line 376 "parser.y"
-                           { (yyval.singleNode) = make_unique<singleNode>((yyvsp[0].type_bool)); }
-#line 2218 "parser.tab.c"
+                           { (yyval.singleNode) = make_unique<SingleNode>(make_unique<BoolNode>((yyvsp[0].type_bool))); }
+#line 2078 "parser.tab.c"
     break;
 
   case 105: /* single: FALSE  */
 #line 377 "parser.y"
-                            { (yyval.singleNode) = make_unique<singleNode>((yyvsp[0].type_bool)); }
-#line 2224 "parser.tab.c"
+                            { (yyval.singleNode) = make_unique<SingleNode>(make_unique<BoolNode>((yyvsp[0].type_bool))); }
+#line 2084 "parser.tab.c"
     break;
 
   case 106: /* call: ID LP args RP  */
 #line 381 "parser.y"
                                   {
-                        (yyval.callNode) = make_unique<callNode>(make_unique<string>((yyvsp[-3].type_id)), move((yyvsp[-1].expressionNodeVec))));
+                        (yyval.callNode) = make_unique<CallNode>(make_unique<string>((yyvsp[-3].type_id)), move((yyvsp[-1].expressionNodeVec))));
                     }
-#line 2232 "parser.tab.c"
+#line 2092 "parser.tab.c"
     break;
 
   case 107: /* args: %empty  */
 #line 385 "parser.y"
                            { (yyval.expressionNodeVec) = nullptr; }
-#line 2238 "parser.tab.c"
+#line 2098 "parser.tab.c"
     break;
 
   case 108: /* args: argList  */
 #line 386 "parser.y"
                               { (yyval.expressionNodeVec) = move((yyvsp[0].expressionNodeVec)); }
-#line 2244 "parser.tab.c"
+#line 2104 "parser.tab.c"
     break;
 
   case 109: /* argList: argList COMMA expression  */
@@ -2249,20 +2109,20 @@ yyreduce:
                         (yyvsp[-2].expressionNodeVec)->push_back(move((yyvsp[0].expressionNode)));
                         (yyval.expressionNodeVec) = move((yyvsp[-2].expressionNodeVec));
                     }
-#line 2253 "parser.tab.c"
+#line 2113 "parser.tab.c"
     break;
 
   case 110: /* argList: expression  */
 #line 393 "parser.y"
                                  {
-                        (yyval.expressionNodeVec) = make_unique<vector<unique_ptr<expressionNode>>>();
+                        (yyval.expressionNodeVec) = make_unique<vector<unique_ptr<ExpressionNode>>>();
                         (yyval.expressionNodeVec)->push_back(move((yyvsp[0].expressionNode)));
                     }
-#line 2262 "parser.tab.c"
+#line 2122 "parser.tab.c"
     break;
 
 
-#line 2266 "parser.tab.c"
+#line 2126 "parser.tab.c"
 
       default: break;
     }
@@ -2460,7 +2320,11 @@ yyreturn:
 
 
 int main() { 
-    return yyparse();
+    yyparse();
+    for(auto p : *root) {
+        p->printNode();
+    }
+    return 0;
 }
 
 void yyerror(std::string s) {
