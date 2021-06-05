@@ -224,10 +224,10 @@ baseType:           INT_TYPE { $$ = make_unique<string>($1); }
                     | BOOL_TYPE { $$ = make_unique<string>($1); }
                     ;
 
-funDeclaration:     baseType ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(make_unique<string>($1), move($4), false) }
-                    | VOID_TYPE ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(nullptr, move($4), false) }
-                    | EXTERN_TYPE baseType ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(make_unique<string>($2), move($5), true) }
-                    | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(nullptr, move($5), true) }
+funDeclaration:     baseType ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(make_unique<string>($1), move($4), move($6), false) }
+                    | VOID_TYPE ID LP params RP compoundStmt { $$ = make_unique<FunDeclarationNode>(nullptr, move($4), move($6), false) }
+                    | EXTERN_TYPE baseType ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(make_unique<string>($2), move($5), nullptr, true) }
+                    | EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON { $$ = make_unique<FunDeclarationNode>(nullptr, move($5), nullptr, true) }
                     ;
 
 params:             paramList { $$ = move($1) }
