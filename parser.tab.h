@@ -123,33 +123,33 @@ union YYSTYPE
 {
 #line 28 "parser.y"
 
-    unique_ptr<DeclarationNode>*     declarationNode;
-    unique_ptr<VarDeclarationNode>  varDeclarationNode;
-    unique_ptr<FunDeclarationNode>  funDeclarationNode;
-    unique_ptr<ParamNode>           paramNode;
-    unique_ptr<CompoundStmtNode>    compoundStmtNode;
-    unique_ptr<StatementNode>       statementNode;
-    unique_ptr<SelectionStmtNode>   selectionStmtNode;
-    unique_ptr<IterationStmtNode>   iterationStmtNode;
-    unique_ptr<WhileStmtNode>       whileStmtNode;
-    unique_ptr<ForStmtNode>         forStmtNode;
-    unique_ptr<ReturnStmtNode>      returnStmtNode;
-    unique_ptr<ExpressionNode>      expressionNode;
-    unique_ptr<VarNode>             varNode;
-    unique_ptr<OperandNode>         operandNode;
-    unique_ptr<SingleNode>          singleNode;
-    unique_ptr<CallNode>            callNode;
+    DeclarationNode      *declarationNode;
+    VarDeclarationNode   *varDeclarationNode;
+    FunDeclarationNode   *funDeclarationNode;
+    ParamNode            *paramNode;
+    CompoundStmtNode     *compoundStmtNode;
+    StatementNode        *statementNode;
+    SelectionStmtNode    *selectionStmtNode;
+    IterationStmtNode    *iterationStmtNode;
+    WhileStmtNode        *whileStmtNode;
+    ForStmtNode          *forStmtNode;
+    ReturnStmtNode       *returnStmtNode;
+    ExpressionNode       *expressionNode;
+    VarNode              *varNode;
+    OperandNode          *operandNode;
+    SingleNode           *singleNode;
+    CallNode             *callNode;
     
-    unique_ptr<vector<int>> intVec;
-    unique_ptr<string>  stringNode;
+    vector<int>* intVec;
+    string*  stringNode;
 
-    unique_ptr<vector<unique_ptr<DeclarationNode>>>  declarationNodeVec;
-    unique_ptr<vector<unique_ptr<IdListNode>>>  idListNodeVec;
-    unique_ptr<vector<unique_ptr<SingleNode>>>  singleNodeVec;
-    unique_ptr<vector<unique_ptr<ParamNode>>>  paramVec;
-    unique_ptr<vector<unique_ptr<VarDeclarationNode>>>  varDeclarationNodeVec;
-    unique_ptr<vector<unique_ptr<StatementNode>>>  statementNodeVec;
-    unique_ptr<vector<unique_ptr<ExpressionNode>>>  expressionNodeVec;
+    vector<DeclarationNode*>    *declarationNodeVec;
+    vector<IdListNode*>         *idListNodeVec;
+    vector<SingleNode*>         *singleNodeVec;
+    vector<ParamNode*>          *paramVec;
+    vector<VarDeclarationNode*> *varDeclarationNodeVec;
+    vector<StatementNode*>      *statementNodeVec;
+    vector<ExpressionNode*>     *expressionNodeVec;
 
     int type_int;
     float type_float;

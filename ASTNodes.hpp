@@ -38,12 +38,12 @@ public:
 
 class DeclarationNode : public Node {
 public:
-    unique_ptr<VarDeclarationNode> varDecl= nullptr;
-    unique_ptr<FunDeclarationNode> funDecl = nullptr;
+    VarDeclarationNode *varDecl= nullptr;
+    FunDeclarationNode *funDecl = nullptr;
 
     DeclarationNode() {};
-    DeclarationNode(unique_ptr<VarDeclarationNode> node):varDecl(move(node)) {};
-    DeclarationNode(unique_ptr<FunDeclarationNode> node):funDecl(move(node)) {};
+    DeclarationNode(VarDeclarationNode *node):varDecl(node) {};
+    DeclarationNode(FunDeclarationNode *node):funDecl(node) {};
     
     Value * codeGen();
     void printNode(void);
@@ -51,18 +51,18 @@ public:
 
 class VarDeclarationNode : public Node {
 public:
-    unique_ptr<string> baseType;
-    unique_ptr<vector<unique_ptr<IdListNode>>> idList;
-    unique_ptr<vector<int>> arrayPost;
-    unique_ptr<vector<unique_ptr<SingleNode>>> arrayConstList;
+    string *baseType;
+    vector<IdListNode*> *idList;
+    vector<int> *arrayPost;
+    vector<SingleNode*> *arrayConstList;
 
     VarDeclarationNode() {};
     VarDeclarationNode(
-        unique_ptr<string> baseType, 
-        unique_ptr<vector<unique_ptr<IdListNode>>> idList,
-        unique_ptr<vector<int>> arrayPost,
-        unique_ptr<vector<unique_ptr<SingleNode>>> arrayConstList
-    ):baseType(move(baseType)), idList(move(idList)), arrayPost(move(arrayPost)), arrayConstList(move(arrayConstList)) {};
+        string *baseType,
+        vector<IdListNode*> *idList,
+        vector<int> *arrayPost,
+        vector<SingleNode*> *arrayConstList
+    ):baseType(baseType), idList(idList), arrayPost(arrayPost), arrayConstList(arrayConstList) {};
 
     Value * codeGen();
     void printNode(void);
@@ -70,14 +70,14 @@ public:
 
 class IdListNode : public Node {
 public:
-    unique_ptr<string> id;
-    unique_ptr<ExpressionNode> initExp;
+    string *id;
+    ExpressionNode *initExp;
 
     IdListNode() {};
     IdListNode(
-        unique_ptr<string> id,
-        unique_ptr<ExpressionNode> initExp
-    ):id(move(id)), initExp(move(initExp)) {}; 
+        string *id,
+        ExpressionNode *initExp
+    ):id(id), initExp(initExp) {}; 
 
     Value * codeGen();
     void printNode(void);
@@ -91,21 +91,20 @@ public:
 
 class FunDeclarationNode : public Node {
 public:
-    unique_ptr<string> baseType;
-    unique_ptr<string> id;
-    unique_ptr<vector<unique_ptr<ParamNode>>> params;
-    unique_ptr<CompoundStmtNode> compoundStmt;
+    string *baseType;
+    string *id;
+    vector<ParamNode*> *params;
+    CompoundStmtNode *compoundStmt;
     bool isExtern;
 
-    
     FunDeclarationNode() {};
     FunDeclarationNode(
-        unique_ptr<string> baseType,
-        unique_ptr<string> id,
-        unique_ptr<vector<unique_ptr<ParamNode>>> params,
-        unique_ptr<CompoundStmtNode> compoundStmt,
+        string *baseType,
+        string *id,
+        vector<ParamNode*> *params,
+        CompoundStmtNode *compoundStmt,
         bool isExtern
-    ):baseType(move(baseType)), id(move(id)), params(move(params)), compoundStmt(move(compoundStmt)), isExtern(move(isExtern)) {};
+    ):baseType(baseType), id(id), params(params), compoundStmt(compoundStmt), isExtern(isExtern) {};
 
     Value * codeGen();
     void printNode(void);
@@ -113,17 +112,16 @@ public:
 
 class ParamNode : public Node {
 public:
-    unique_ptr<string> baseType;
-    unique_ptr<string> id;
-    unique_ptr<vector<int>> arrayPostParam;
-
+    string *baseType;
+    string *id;
+    vector<int> *arrayPostParam;
 
     ParamNode() {};
     ParamNode(
-        unique_ptr<string> baseType,
-        unique_ptr<string> id,
-        unique_ptr<vector<int>> arrayPostParam
-    ):baseType(move(baseType)), id(move(id)), arrayPostParam(move(arrayPostParam)) {};
+        string *baseType,
+        string *id,
+        vector<int> *arrayPostParam
+    ):baseType(baseType), id(id), arrayPostParam(arrayPostParam) {};
 
     Value * codeGen();
     void printNode(void);
@@ -131,14 +129,14 @@ public:
 
 class CompoundStmtNode : public Node {
 public:
-    unique_ptr<vector<unique_ptr<VarDeclarationNode>>> localDeclarations;
-    unique_ptr<vector<unique_ptr<StatementNode>>> statementList;
+    vector<VarDeclarationNode*> *localDeclarations;
+    vector<StatementNode*> *statementList;
 
     CompoundStmtNode() {};
     CompoundStmtNode(
-        unique_ptr<vector<unique_ptr<VarDeclarationNode>>> localDeclarations,
-        unique_ptr<vector<unique_ptr<StatementNode>>> statementList
-    ):localDeclarations(move(localDeclarations)), statementList(move(statementList)) {};
+        vector<VarDeclarationNode*> *localDeclarations,
+        vector<StatementNode*> *statementList
+    ):localDeclarations(localDeclarations), statementList(statementList) {};
     
     Value * codeGen();
     void printNode(void);
@@ -146,18 +144,18 @@ public:
 
 class StatementNode : public Node {
 public:
-    unique_ptr<ExpressionNode> expNode = nullptr;
-    unique_ptr<CompoundStmtNode> compNode = nullptr;
-    unique_ptr<SelectionStmtNode> selNode = nullptr;
-    unique_ptr<IterationStmtNode> iterNode = nullptr;
-    unique_ptr<ReturnStmtNode> retNode = nullptr;
+    ExpressionNode *expNode = nullptr;
+    CompoundStmtNode *compNode = nullptr;
+    SelectionStmtNode *selNode = nullptr;
+    IterationStmtNode *iterNode = nullptr;
+    ReturnStmtNode *retNode = nullptr;
 
     StatementNode() {};
-    StatementNode(unique_ptr<ExpressionNode> statement):expNode(move(statement)) {};
-    StatementNode(unique_ptr<CompoundStmtNode> statement):compNode(move(statement)) {};
-    StatementNode(unique_ptr<SelectionStmtNode> statement):selNode(move(statement)) {};
-    StatementNode(unique_ptr<IterationStmtNode> statement):iterNode(move(statement)) {};
-    StatementNode(unique_ptr<ReturnStmtNode> statement):retNode(move(statement)) {};
+    StatementNode(ExpressionNode *statement):expNode(statement) {};
+    StatementNode(CompoundStmtNode *statement):compNode(statement) {};
+    StatementNode(SelectionStmtNode *statement):selNode(statement) {};
+    StatementNode(IterationStmtNode *statement):iterNode(statement) {};
+    StatementNode(ReturnStmtNode *statement):retNode(statement) {};
     
     Value * codeGen();
     void printNode(void);
@@ -165,16 +163,16 @@ public:
 
 class SelectionStmtNode : public Node {
 public:
-    unique_ptr<ExpressionNode> condition;
-    unique_ptr<StatementNode> ifPart;
-    unique_ptr<StatementNode> elsePart;
+    ExpressionNode *condition;
+    StatementNode *ifPart;
+    StatementNode *elsePart;
 
     SelectionStmtNode() {};
     SelectionStmtNode(
-        unique_ptr<ExpressionNode> condition,
-        unique_ptr<StatementNode> ifPart,
-        unique_ptr<StatementNode> elsePart
-    ):condition(move(condition)), ifPart(move(ifPart)), elsePart(move(elsePart)) {};
+        ExpressionNode *condition,
+        StatementNode *ifPart,
+        StatementNode *elsePart
+    ):condition(condition), ifPart(ifPart), elsePart(elsePart) {};
 
     Value * codeGen();
     void printNode(void);
@@ -182,12 +180,12 @@ public:
 
 class IterationStmtNode : public Node {
 public:
-    unique_ptr<WhileStmtNode> whileNode = nullptr;
-    unique_ptr<ForStmtNode> forNode = nullptr;
+    WhileStmtNode *whileNode = nullptr;
+    ForStmtNode *forNode = nullptr;
 
     IterationStmtNode() {};
-    IterationStmtNode(unique_ptr<WhileStmtNode> iterationStmt):whileNode(move(iterationStmt)) {};
-    IterationStmtNode(unique_ptr<ForStmtNode> iterationStmt):forNode(move(iterationStmt)) {};
+    IterationStmtNode(WhileStmtNode *iterationStmt):whileNode(iterationStmt) {};
+    IterationStmtNode(ForStmtNode *iterationStmt):forNode(iterationStmt) {};
 
     Value * codeGen();
     void printNode(void);
@@ -195,14 +193,14 @@ public:
 
 class WhileStmtNode : public Node {
 public:
-    unique_ptr<ExpressionNode> condition;
-    unique_ptr<StatementNode> statement;
+    ExpressionNode *condition;
+    StatementNode *statement;
 
     WhileStmtNode() {};
     WhileStmtNode(
-        unique_ptr<ExpressionNode> condition,
-        unique_ptr<StatementNode> statement
-    ):condition(move(condition)), statement(move(statement)) {};
+        ExpressionNode *condition,
+        StatementNode *statement
+    ):condition(condition), statement(statement) {};
 
     Value * codeGen();
     void printNode(void);
@@ -210,18 +208,18 @@ public:
 
 class ForStmtNode : public Node {
 public:
-    unique_ptr<ExpressionNode> first;
-    unique_ptr<ExpressionNode> second;
-    unique_ptr<ExpressionNode> third;
-    unique_ptr<StatementNode> statement;
+    ExpressionNode *first;
+    ExpressionNode *second;
+    ExpressionNode *third;
+    StatementNode *statement;
 
     ForStmtNode() {};
     ForStmtNode(
-        unique_ptr<ExpressionNode> first,
-        unique_ptr<ExpressionNode> second,
-        unique_ptr<ExpressionNode> third,
-        unique_ptr<StatementNode> statement
-    ):first(move(first)), second(move(second)), third(move(third)), statement(move(statement)) {};
+        ExpressionNode *first,
+        ExpressionNode *second,
+        ExpressionNode *third,
+        StatementNode *statement
+    ):first(first), second(second), third(third), statement(statement) {};
 
     Value * codeGen();
     void printNode(void);
@@ -229,27 +227,29 @@ public:
 
 class ReturnStmtNode : public Node {
 public:
-    unique_ptr<ExpressionNode> returnExp;
+    ExpressionNode *returnExp;
 
     ReturnStmtNode() {};
-    ReturnStmtNode(unique_ptr<ExpressionNode> returnExp):returnExp(move(returnExp)) {};
-    
+    ReturnStmtNode(ExpressionNode *returnExp):returnExp(returnExp) {};
+
     Value * codeGen();
     void printNode(void);
 };
 
 class ExpressionNode : public Node {
 public:
-    unique_ptr<string> op;
-    unique_ptr<VarNode> var;
-    unique_ptr<ExpressionNode> expression;
+    string *op;
+    VarNode *var;
+    ExpressionNode *expression;
+    OperandNode * operand;
 
     ExpressionNode() {};
     ExpressionNode(
-        unique_ptr<string> op,
-        unique_ptr<VarNode> var,
-        unique_ptr<ExpressionNode> expression
-    ):op(move(op)), var(move(var)), expression(move(expression)) {};
+        string *op,
+        VarNode *var,
+        ExpressionNode *expression,
+        OperandNode * operand
+    ):op(op), var(var), expression(expression), operand(operand) {};
 
     Value * codeGen();
     void printNode(void);
@@ -257,14 +257,14 @@ public:
 
 class VarNode : public Node {
 public:
-    unique_ptr<string> id;
-    unique_ptr<vector<int>> arrayPost;
+    string *id;
+    vector<int> *arrayPost;
 
     VarNode() {};
     VarNode(
-        unique_ptr<string> id,
-        unique_ptr<vector<int>> arrayPost
-    ):id(move(id)), arrayPost(move(arrayPost)) {};
+        string *id,
+        vector<int> *arrayPost
+    ):id(id), arrayPost(arrayPost) {};
 
     Value * codeGen();
     void printNode(void);
@@ -272,16 +272,18 @@ public:
 
 class OperandNode : public Node {
 public:
-    unique_ptr<string> op;
-    unique_ptr<OperandNode> lhs;
-    unique_ptr<OperandNode> rhs;
+    string *op;
+    OperandNode *lhs;
+    OperandNode *rhs;
+    SingleNode *single;
 
     OperandNode() {};
     OperandNode(
-        unique_ptr<string> op,
-        unique_ptr<OperandNode> lhs,
-        unique_ptr<OperandNode> rhs
-    ):op(move(op)), lhs(move(lhs)), rhs(move(rhs)) {};
+        string *op,
+        OperandNode *lhs,
+        OperandNode *rhs,
+        SingleNode *single
+    ):op(op), lhs(lhs), rhs(rhs), single(single) {};
 
     Value * codeGen();
     void printNode(void);
@@ -289,20 +291,20 @@ public:
 
 class SingleNode : public Node {
 public:
-    unique_ptr<VarNode> varNode = nullptr;
-    unique_ptr<CallNode> callNode = nullptr;
-    unique_ptr<IntNode> intNode = nullptr;
-    unique_ptr<FloatNode> floatNode = nullptr;
-    unique_ptr<CharNode> charNode = nullptr;
-    unique_ptr<BoolNode> boolNode = nullptr;
+    VarNode *varNode = nullptr;
+    CallNode *callNode = nullptr;
+    IntNode *intNode = nullptr;
+    FloatNode *floatNode = nullptr;
+    CharNode *charNode = nullptr;
+    BoolNode *boolNode = nullptr;
 
     SingleNode() {};
-    SingleNode(unique_ptr<VarNode> signle):varNode(move(signle)) {};
-    SingleNode(unique_ptr<CallNode> signle):callNode(move(signle)) {};
-    SingleNode(unique_ptr<IntNode> signle):intNode(move(signle)) {};
-    SingleNode(unique_ptr<FloatNode> signle):floatNode(move(signle)) {};
-    SingleNode(unique_ptr<CharNode> signle):charNode(move(signle)) {};
-    SingleNode(unique_ptr<BoolNode> signle):boolNode(move(signle)) {};
+    SingleNode(VarNode *signle):varNode(signle) {};
+    SingleNode(CallNode *signle):callNode(signle) {};
+    SingleNode(IntNode *signle):intNode(signle) {};
+    SingleNode(FloatNode *signle):floatNode(signle) {};
+    SingleNode(CharNode *signle):charNode(signle) {};
+    SingleNode(BoolNode *signle):boolNode(signle) {};
     
     Value * codeGen();
     void printNode(void);
@@ -310,14 +312,14 @@ public:
 
 class CallNode : public Node {
 public:
-    unique_ptr<string> id;
-    unique_ptr<vector<unique_ptr<ExpressionNode>>> args;
+    string *id;
+    vector<ExpressionNode*> *args;
 
     CallNode() {};
     CallNode(
-        unique_ptr<string> id,
-        unique_ptr<vector<unique_ptr<ExpressionNode>>> args
-    ):id(move(id)), args(move(args)) {};
+        string *id,
+        vector<ExpressionNode*> *args
+    ):id(id), args(args) {};
 
     Value * codeGen();
     void printNode(void);

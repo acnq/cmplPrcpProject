@@ -85,7 +85,7 @@ extern int yylineno;
 extern char* yytext;
 extern FILE* yyin;
 
-unique_ptr<vector<unique_ptr<DeclarationNode>>> root;
+vector<DeclarationNode*> *root;
 
 extern int yylex(void);
 
@@ -602,18 +602,18 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   133,   133,   136,   140,   146,   147,   150,   153,   158,
-     165,   169,   173,   177,   183,   187,   209,   213,   218,   219,
-     220,   221,   222,   225,   226,   227,   228,   231,   232,   235,
-     239,   245,   246,   249,   252,   255,   261,   262,   263,   264,
-     267,   271,   277,   281,   287,   288,   289,   290,   291,   294,
-     295,   298,   299,   302,   303,   306,   311,   316,   317,   320,
-     321,   324,   325,   326,   327,   328,   329,   330,   331,   332,
-     333,   334,   337,   338,   341,   342,   343,   344,   345,   346,
-     347,   348,   349,   350,   351,   352,   353,   354,   355,   356,
-     357,   358,   359,   360,   361,   362,   366,   367,   368,   371,
-     372,   373,   374,   375,   376,   377,   381,   385,   386,   389,
-     393
+       0,   132,   132,   135,   139,   145,   146,   149,   152,   157,
+     164,   168,   172,   176,   182,   186,   208,   212,   217,   218,
+     219,   220,   221,   224,   225,   226,   227,   230,   231,   234,
+     238,   244,   245,   248,   251,   254,   260,   261,   262,   263,
+     266,   270,   276,   280,   286,   287,   288,   289,   290,   293,
+     294,   297,   298,   301,   302,   305,   310,   315,   316,   319,
+     320,   323,   324,   325,   326,   327,   328,   329,   330,   331,
+     332,   333,   336,   337,   340,   341,   342,   343,   344,   345,
+     346,   347,   348,   349,   350,   351,   352,   353,   354,   355,
+     356,   357,   358,   359,   360,   361,   365,   366,   367,   370,
+     371,   372,   373,   374,   375,   376,   380,   384,   385,   388,
+     392
 };
 #endif
 
@@ -1391,732 +1391,732 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: declarationList  */
-#line 133 "parser.y"
-                                    { root = move((yyvsp[0].declarationNodeVec)); }
+#line 132 "parser.y"
+                                    { root = (yyvsp[0].declarationNodeVec); }
 #line 1397 "parser.tab.c"
     break;
 
   case 3: /* declarationList: declarationList declaration  */
-#line 136 "parser.y"
+#line 135 "parser.y"
                                                  {
-                        (yyvsp[-1].declarationNodeVec)->push_back(move(*(yyvsp[0].declarationNode)));
-                        (yyval.declarationNodeVec) = move((yyvsp[-1].declarationNodeVec));
+                        (yyvsp[-1].declarationNodeVec)->push_back((yyvsp[0].declarationNode));
+                        (yyval.declarationNodeVec) = (yyvsp[-1].declarationNodeVec);
                     }
 #line 1406 "parser.tab.c"
     break;
 
   case 4: /* declarationList: declaration  */
-#line 140 "parser.y"
+#line 139 "parser.y"
                                     {
-                        (yyval.declarationNodeVec) = make_unique<vector<unique_ptr<DeclarationNode>>>();
-                        (yyval.declarationNodeVec)->push_back(move(*(yyvsp[0].declarationNode)));
+                        (yyval.declarationNodeVec) = new vector<DeclarationNode*>();
+                        (yyval.declarationNodeVec)->push_back((yyvsp[0].declarationNode));
                     }
 #line 1415 "parser.tab.c"
     break;
 
   case 5: /* declaration: varDeclaration  */
-#line 146 "parser.y"
-                                   { (yyval.declarationNode) = &make_unique<DeclarationNode>(move((yyvsp[0].varDeclarationNode))); }
+#line 145 "parser.y"
+                                   { (yyval.declarationNode) = new DeclarationNode((yyvsp[0].varDeclarationNode)); }
 #line 1421 "parser.tab.c"
     break;
 
   case 6: /* declaration: funDeclaration  */
-#line 147 "parser.y"
-                                      { (yyval.declarationNode) = &make_unique<DeclarationNode>(move((yyvsp[0].funDeclarationNode))); }
+#line 146 "parser.y"
+                                      { (yyval.declarationNode) = new DeclarationNode((yyvsp[0].funDeclarationNode)); }
 #line 1427 "parser.tab.c"
     break;
 
   case 7: /* varDeclaration: baseType idList SEMICOLON  */
-#line 150 "parser.y"
+#line 149 "parser.y"
                                               { 
-                        (yyval.varDeclarationNode) = make_unique<VarDeclarationNode>(move((yyvsp[-2].stringNode)), move((yyvsp[-1].idListNodeVec)), nullptr, nullptr);
+                        (yyval.varDeclarationNode) = new VarDeclarationNode((yyvsp[-2].stringNode), (yyvsp[-1].idListNodeVec), nullptr, nullptr);
                     }
 #line 1435 "parser.tab.c"
     break;
 
   case 8: /* varDeclaration: baseType ID arrayPost SEMICOLON  */
-#line 153 "parser.y"
+#line 152 "parser.y"
                                                       {
-                        (yyval.varDeclarationNode) = make_unique<vector<unique_ptr<IdListNode>>>();
-                        (yyval.varDeclarationNode)-> push_back( make_unique<IdListNode>(make_unique<string>((yyvsp[-2].type_id)), nullptr) );
-                        (yyval.varDeclarationNode) = make_unique<VarDeclarationNode>(move((yyvsp[-3].stringNode)), move((yyval.varDeclarationNode)), move((yyvsp[-1].intVec)), nullptr);
+                        auto v = new vector<IdListNode*>();
+                        v-> push_back( new IdListNode( new string((yyvsp[-2].type_id)), nullptr) );
+                        (yyval.varDeclarationNode) = new VarDeclarationNode((yyvsp[-3].stringNode), v, (yyvsp[-1].intVec), nullptr);
                     }
 #line 1445 "parser.tab.c"
     break;
 
   case 9: /* varDeclaration: baseType ID arrayPost ASSIGN LC arrayConstList RC SEMICOLON  */
-#line 158 "parser.y"
+#line 157 "parser.y"
                                                                                       {
-                        (yyval.varDeclarationNode) = make_unique<vector<unique_ptr<IdListNode>>>();
-                        (yyval.varDeclarationNode)-> push_back( make_unique<IdListNode>(make_unique<string>((yyvsp[-6].type_id)), nullptr) );
-                        (yyval.varDeclarationNode) = make_unique<VarDeclarationNode>(move((yyvsp[-7].stringNode)), move((yyval.varDeclarationNode)), move((yyvsp[-5].intVec)), move((yyvsp[-2].singleNodeVec)));
+                        auto v = new vector<IdListNode*>();
+                        v-> push_back( new IdListNode( new string((yyvsp[-6].type_id)), nullptr) );
+                        (yyval.varDeclarationNode) = new VarDeclarationNode((yyvsp[-7].stringNode), v, (yyvsp[-5].intVec), (yyvsp[-2].singleNodeVec));
                     }
 #line 1455 "parser.tab.c"
     break;
 
   case 10: /* idList: idList COMMA ID  */
-#line 165 "parser.y"
+#line 164 "parser.y"
                                     { 
-                        (yyvsp[-2].idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[0].type_id)), nullptr));
-                        (yyval.idListNodeVec) = move((yyvsp[-2].idListNodeVec));
+                        (yyvsp[-2].idListNodeVec)->push_back(new IdListNode(new string((yyvsp[0].type_id)), nullptr));
+                        (yyval.idListNodeVec) = (yyvsp[-2].idListNodeVec);
                     }
 #line 1464 "parser.tab.c"
     break;
 
   case 11: /* idList: idList COMMA ID ASSIGN expression  */
-#line 169 "parser.y"
+#line 168 "parser.y"
                                                         {
-                        (yyvsp[-4].idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[-2].type_id)), move((yyvsp[0].expressionNode))));
-                        (yyval.idListNodeVec) = move((yyvsp[-4].idListNodeVec));
+                        (yyvsp[-4].idListNodeVec)->push_back(new IdListNode(new string((yyvsp[-2].type_id)), (yyvsp[0].expressionNode)));
+                        (yyval.idListNodeVec) = (yyvsp[-4].idListNodeVec);
                     }
 #line 1473 "parser.tab.c"
     break;
 
   case 12: /* idList: ID  */
-#line 173 "parser.y"
+#line 172 "parser.y"
                          { 
-                        (yyval.idListNodeVec) = make_unique<vector<unique_ptr<IdListNode>>>();
-                        (yyval.idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[0].type_id)), nullptr)); 
+                        (yyval.idListNodeVec) = new vector<IdListNode*>();
+                        (yyval.idListNodeVec)->push_back(new IdListNode(new string((yyvsp[0].type_id)), nullptr)); 
                     }
 #line 1482 "parser.tab.c"
     break;
 
   case 13: /* idList: ID ASSIGN expression  */
-#line 177 "parser.y"
+#line 176 "parser.y"
                                            {
-                        (yyval.idListNodeVec) = make_unique<vector<unique_ptr<IdListNode>>>();
-                        (yyval.idListNodeVec)->push_back(make_unique<IdListNode>(make_unique<string>((yyvsp[-2].type_id)), move((yyvsp[0].expressionNode)))); 
+                        (yyval.idListNodeVec) = new vector<IdListNode*>();
+                        (yyval.idListNodeVec)->push_back(new IdListNode(new string((yyvsp[-2].type_id)), (yyvsp[0].expressionNode))); 
                     }
 #line 1491 "parser.tab.c"
     break;
 
   case 14: /* arrayPost: LB INT RB  */
-#line 183 "parser.y"
+#line 182 "parser.y"
                                {
-                        (yyval.intVec) = make_unique<vector<int>>();
+                        (yyval.intVec) = new vector<int>();
                         (yyval.intVec)->push_back((yyvsp[-1].type_int));
                     }
 #line 1500 "parser.tab.c"
     break;
 
   case 15: /* arrayPost: arrayPost LB INT RB  */
-#line 187 "parser.y"
+#line 186 "parser.y"
                                           {
                         (yyvsp[-3].intVec)->push_back((yyvsp[-1].type_int));
-                        (yyval.intVec) = move((yyvsp[-3].intVec));
+                        (yyval.intVec) = (yyvsp[-3].intVec);
                     }
 #line 1509 "parser.tab.c"
     break;
 
   case 16: /* arrayConstList: arrayConstList COMMA single  */
-#line 209 "parser.y"
+#line 208 "parser.y"
                                                 {
-                        (yyvsp[-2].singleNodeVec)->push_back(move((yyvsp[0].singleNode)));
-                        (yyval.singleNodeVec) = move((yyvsp[-2].singleNodeVec));
+                        (yyvsp[-2].singleNodeVec)->push_back((yyvsp[0].singleNode));
+                        (yyval.singleNodeVec) = (yyvsp[-2].singleNodeVec);
                     }
 #line 1518 "parser.tab.c"
     break;
 
   case 17: /* arrayConstList: single  */
-#line 213 "parser.y"
+#line 212 "parser.y"
                              {
-                        (yyval.singleNodeVec) = make_unique<vector<unique_ptr<SingleNode>>>();
-                        (yyval.singleNodeVec)->push_back(move((yyvsp[0].singleNode)));
+                        (yyval.singleNodeVec) = new vector<SingleNode*>();
+                        (yyval.singleNodeVec)->push_back((yyvsp[0].singleNode));
                     }
 #line 1527 "parser.tab.c"
     break;
 
   case 18: /* baseType: INT_TYPE  */
-#line 218 "parser.y"
-                             { (yyval.stringNode) = make_unique<string>("INT_TYPE"); }
+#line 217 "parser.y"
+                             { (yyval.stringNode) = new string("INT_TYPE"); }
 #line 1533 "parser.tab.c"
     break;
 
   case 19: /* baseType: DOUBLE_TYPE  */
-#line 219 "parser.y"
-                                  { (yyval.stringNode) = make_unique<string>("DOUBLE_TYPE"); }
+#line 218 "parser.y"
+                                  { (yyval.stringNode) = new string("DOUBLE_TYPE"); }
 #line 1539 "parser.tab.c"
     break;
 
   case 20: /* baseType: FLOAT_TYPE  */
-#line 220 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>("FLOAT_TYPE"); }
+#line 219 "parser.y"
+                                 { (yyval.stringNode) = new string("FLOAT_TYPE"); }
 #line 1545 "parser.tab.c"
     break;
 
   case 21: /* baseType: CHAR_TYPE  */
-#line 221 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>("CHAR_TYPE"); }
+#line 220 "parser.y"
+                                { (yyval.stringNode) = new string("CHAR_TYPE"); }
 #line 1551 "parser.tab.c"
     break;
 
   case 22: /* baseType: BOOL_TYPE  */
-#line 222 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>("BOOL_TYPE"); }
+#line 221 "parser.y"
+                                { (yyval.stringNode) = new string("BOOL_TYPE"); }
 #line 1557 "parser.tab.c"
     break;
 
   case 23: /* funDeclaration: baseType ID LP params RP compoundStmt  */
-#line 225 "parser.y"
-                                                          { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(make_unique<string>((yyvsp[-5].stringNode)), make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), move((yyvsp[0].compoundStmtNode)), false) }
+#line 224 "parser.y"
+                                                          { (yyval.funDeclarationNode) = new FunDeclarationNode((yyvsp[-5].stringNode), new string((yyvsp[-4].type_id)), (yyvsp[-2].paramVec), (yyvsp[0].compoundStmtNode), false); }
 #line 1563 "parser.tab.c"
     break;
 
   case 24: /* funDeclaration: VOID_TYPE ID LP params RP compoundStmt  */
-#line 226 "parser.y"
-                                                             { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(nullptr, make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), move((yyvsp[0].compoundStmtNode)), false) }
+#line 225 "parser.y"
+                                                             { (yyval.funDeclarationNode) = new FunDeclarationNode(nullptr, new string((yyvsp[-4].type_id)), (yyvsp[-2].paramVec), (yyvsp[0].compoundStmtNode), false); }
 #line 1569 "parser.tab.c"
     break;
 
   case 25: /* funDeclaration: EXTERN_TYPE baseType ID LP params RP SEMICOLON  */
-#line 227 "parser.y"
-                                                                     { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(make_unique<string>((yyvsp[-5].stringNode)), make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), nullptr, true) }
+#line 226 "parser.y"
+                                                                     { (yyval.funDeclarationNode) = new FunDeclarationNode((yyvsp[-5].stringNode), new string((yyvsp[-4].type_id)), (yyvsp[-2].paramVec), nullptr, true); }
 #line 1575 "parser.tab.c"
     break;
 
   case 26: /* funDeclaration: EXTERN_TYPE VOID_TYPE ID LP params RP SEMICOLON  */
-#line 228 "parser.y"
-                                                                      { (yyval.funDeclarationNode) = make_unique<FunDeclarationNode>(nullptr, make_unique<string>((yyvsp[-4].type_id)), move((yyvsp[-2].paramVec)), nullptr, true) }
+#line 227 "parser.y"
+                                                                      { (yyval.funDeclarationNode) = new FunDeclarationNode(nullptr, new string((yyvsp[-4].type_id)), (yyvsp[-2].paramVec), nullptr, true); }
 #line 1581 "parser.tab.c"
     break;
 
   case 27: /* params: paramList  */
-#line 231 "parser.y"
-                              { (yyval.paramVec) = move((yyvsp[0].paramVec)) }
+#line 230 "parser.y"
+                              { (yyval.paramVec) = (yyvsp[0].paramVec); }
 #line 1587 "parser.tab.c"
     break;
 
   case 28: /* params: VOID_TYPE  */
-#line 232 "parser.y"
+#line 231 "parser.y"
                                 { (yyval.paramVec) = nullptr; }
 #line 1593 "parser.tab.c"
     break;
 
   case 29: /* paramList: paramList COMMA param  */
-#line 235 "parser.y"
+#line 234 "parser.y"
                                           {
-                        (yyvsp[-2].paramVec)->push_back(move((yyvsp[0].paramNode)));
-                        (yyval.paramVec) = move((yyvsp[-2].paramVec));
+                        (yyvsp[-2].paramVec)->push_back((yyvsp[0].paramNode));
+                        (yyval.paramVec) = (yyvsp[-2].paramVec);
                     }
 #line 1602 "parser.tab.c"
     break;
 
   case 30: /* paramList: param  */
-#line 239 "parser.y"
+#line 238 "parser.y"
                              {
-                        (yyval.paramVec) = make_unique<vector<unique_ptr<ParamNode>>>();
-                        (yyval.paramVec)->push_back(move((yyvsp[0].paramNode)));
+                        (yyval.paramVec) = new vector<ParamNode*>();
+                        (yyval.paramVec)->push_back((yyvsp[0].paramNode));
                     }
 #line 1611 "parser.tab.c"
     break;
 
   case 31: /* param: baseType ID  */
-#line 245 "parser.y"
-                                { (yyval.paramNode) = make_unique<ParamNode>(move((yyvsp[-1].stringNode)), move((yyvsp[0].type_id)), nullptr) }
+#line 244 "parser.y"
+                                { (yyval.paramNode) = new ParamNode((yyvsp[-1].stringNode), new string((yyvsp[0].type_id)), nullptr); }
 #line 1617 "parser.tab.c"
     break;
 
   case 32: /* param: baseType ID arrayPostParam  */
-#line 246 "parser.y"
-                                                 { (yyval.paramNode) = make_unique<ParamNode>(move((yyvsp[-2].stringNode)), move((yyvsp[-1].type_id)), move((yyvsp[0].intVec))) }
+#line 245 "parser.y"
+                                                 { (yyval.paramNode) = new ParamNode((yyvsp[-2].stringNode), new string((yyvsp[-1].type_id)), (yyvsp[0].intVec)); }
 #line 1623 "parser.tab.c"
     break;
 
   case 33: /* arrayPostParam: LB RB  */
-#line 249 "parser.y"
+#line 248 "parser.y"
                           {
-                        (yyval.intVec) = make_unique<vector<int>>();
+                        (yyval.intVec) = new vector<int>();
                     }
 #line 1631 "parser.tab.c"
     break;
 
   case 34: /* arrayPostParam: LB INT RB  */
-#line 252 "parser.y"
+#line 251 "parser.y"
                                  {
-                        (yyval.intVec) = make_unique<vector<int>>();
+                        (yyval.intVec) = new vector<int>();
                     }
 #line 1639 "parser.tab.c"
     break;
 
   case 35: /* arrayPostParam: arrayPostParam LB INT RB  */
-#line 255 "parser.y"
+#line 254 "parser.y"
                                                {
                         (yyvsp[-3].intVec)->push_back((yyvsp[-1].type_int));
-                        (yyval.intVec) = move((yyvsp[-3].intVec));
+                        (yyval.intVec) = (yyvsp[-3].intVec);
                     }
 #line 1648 "parser.tab.c"
     break;
 
   case 36: /* compoundStmt: LC localDeclarations statementList RC  */
-#line 261 "parser.y"
-                                                          { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(move((yyvsp[-2].varDeclarationNodeVec)), move((yyvsp[-1].statementNodeVec))); }
+#line 260 "parser.y"
+                                                          { (yyval.compoundStmtNode) = new CompoundStmtNode((yyvsp[-2].varDeclarationNodeVec), (yyvsp[-1].statementNodeVec)); }
 #line 1654 "parser.tab.c"
     break;
 
   case 37: /* compoundStmt: LC localDeclarations RC  */
-#line 262 "parser.y"
-                                              { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(move((yyvsp[-1].varDeclarationNodeVec)), nullptr); }
+#line 261 "parser.y"
+                                              { (yyval.compoundStmtNode) = new CompoundStmtNode((yyvsp[-1].varDeclarationNodeVec), nullptr); }
 #line 1660 "parser.tab.c"
     break;
 
   case 38: /* compoundStmt: LC statementList RC  */
-#line 263 "parser.y"
-                                          { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(nullptr, move((yyvsp[-1].statementNodeVec))); }
+#line 262 "parser.y"
+                                          { (yyval.compoundStmtNode) = new CompoundStmtNode(nullptr, (yyvsp[-1].statementNodeVec)); }
 #line 1666 "parser.tab.c"
     break;
 
   case 39: /* compoundStmt: LC RC  */
-#line 264 "parser.y"
-                            { (yyval.compoundStmtNode) = make_unique<CompoundStmtNode>(nullptr, nullptr); }
+#line 263 "parser.y"
+                            { (yyval.compoundStmtNode) = new CompoundStmtNode(nullptr, nullptr); }
 #line 1672 "parser.tab.c"
     break;
 
   case 40: /* localDeclarations: varDeclaration  */
-#line 267 "parser.y"
+#line 266 "parser.y"
                                    {
-                        (yyval.varDeclarationNodeVec) = make_unique<vector<unique_ptr<VarDeclarationNode>>>();
-                        (yyval.varDeclarationNodeVec)->push_back(move((yyvsp[0].varDeclarationNode)));
+                        (yyval.varDeclarationNodeVec) = new vector<VarDeclarationNode*>();
+                        (yyval.varDeclarationNodeVec)->push_back((yyvsp[0].varDeclarationNode));
                     }
 #line 1681 "parser.tab.c"
     break;
 
   case 41: /* localDeclarations: localDeclarations varDeclaration  */
-#line 271 "parser.y"
+#line 270 "parser.y"
                                                        { 
-                        (yyvsp[-1].varDeclarationNodeVec)->push_back(move((yyvsp[0].varDeclarationNode)));
-                        (yyval.varDeclarationNodeVec) = move((yyvsp[-1].varDeclarationNodeVec));
+                        (yyvsp[-1].varDeclarationNodeVec)->push_back((yyvsp[0].varDeclarationNode));
+                        (yyval.varDeclarationNodeVec) = (yyvsp[-1].varDeclarationNodeVec);
                     }
 #line 1690 "parser.tab.c"
     break;
 
   case 42: /* statementList: statement  */
-#line 277 "parser.y"
+#line 276 "parser.y"
                               { 
-                        (yyval.statementNodeVec) = make_unique<vector<unique_ptr<StatementNode>>>();
-                        (yyval.statementNodeVec)->push_back(move((yyvsp[0].statementNode)));
+                        (yyval.statementNodeVec) = new vector<StatementNode*>();
+                        (yyval.statementNodeVec)->push_back((yyvsp[0].statementNode));
                     }
 #line 1699 "parser.tab.c"
     break;
 
   case 43: /* statementList: statementList statement  */
-#line 281 "parser.y"
+#line 280 "parser.y"
                                               {
-                        (yyvsp[-1].statementNodeVec)->push_back(move((yyvsp[0].statementNode)));
-                        (yyval.statementNodeVec) = move((yyvsp[-1].statementNodeVec));
+                        (yyvsp[-1].statementNodeVec)->push_back((yyvsp[0].statementNode));
+                        (yyval.statementNodeVec) = (yyvsp[-1].statementNodeVec);
                     }
 #line 1708 "parser.tab.c"
     break;
 
   case 44: /* statement: expressionStmt  */
-#line 287 "parser.y"
-                                   { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].expressionNode))); }
+#line 286 "parser.y"
+                                   { (yyval.statementNode) = new StatementNode((yyvsp[0].expressionNode)); }
 #line 1714 "parser.tab.c"
     break;
 
   case 45: /* statement: compoundStmt  */
-#line 288 "parser.y"
-                                   { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].compoundStmtNode))); }
+#line 287 "parser.y"
+                                   { (yyval.statementNode) = new StatementNode((yyvsp[0].compoundStmtNode)); }
 #line 1720 "parser.tab.c"
     break;
 
   case 46: /* statement: selectionStmt  */
-#line 289 "parser.y"
-                                    { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].selectionStmtNode))); }
+#line 288 "parser.y"
+                                    { (yyval.statementNode) = new StatementNode((yyvsp[0].selectionStmtNode)); }
 #line 1726 "parser.tab.c"
     break;
 
   case 47: /* statement: iterationStmt  */
-#line 290 "parser.y"
-                                    { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].iterationStmtNode))); }
+#line 289 "parser.y"
+                                    { (yyval.statementNode) = new StatementNode((yyvsp[0].iterationStmtNode)); }
 #line 1732 "parser.tab.c"
     break;
 
   case 48: /* statement: returnStmt  */
-#line 291 "parser.y"
-                                 { (yyval.statementNode) = make_unique<StatementNode>(move((yyvsp[0].returnStmtNode))); }
+#line 290 "parser.y"
+                                 { (yyval.statementNode) = new StatementNode((yyvsp[0].returnStmtNode)); }
 #line 1738 "parser.tab.c"
     break;
 
   case 49: /* expressionStmt: expression SEMICOLON  */
-#line 294 "parser.y"
-                                         { (yyval.expressionNode) = move((yyvsp[-1].expressionNode)); }
+#line 293 "parser.y"
+                                         { (yyval.expressionNode) = (yyvsp[-1].expressionNode); }
 #line 1744 "parser.tab.c"
     break;
 
   case 50: /* expressionStmt: SEMICOLON  */
-#line 295 "parser.y"
+#line 294 "parser.y"
                                 { (yyval.expressionNode) = nullptr; }
 #line 1750 "parser.tab.c"
     break;
 
   case 51: /* selectionStmt: IF LP expression RP statement  */
-#line 298 "parser.y"
-                                                  { (yyval.selectionStmtNode) = make_unique<SelectionStmtNode>(move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)), nullptr); }
+#line 297 "parser.y"
+                                                  { (yyval.selectionStmtNode) = new SelectionStmtNode((yyvsp[-2].expressionNode), (yyvsp[0].statementNode), nullptr); }
 #line 1756 "parser.tab.c"
     break;
 
   case 52: /* selectionStmt: IF LP expression RP statement ELSE statement  */
-#line 299 "parser.y"
-                                                                   { (yyval.selectionStmtNode) = make_unique<SelectionStmtNode>(move((yyvsp[-4].expressionNode)), move((yyvsp[-2].statementNode)), move((yyvsp[0].statementNode))); }
+#line 298 "parser.y"
+                                                                   { (yyval.selectionStmtNode) = new SelectionStmtNode((yyvsp[-4].expressionNode), (yyvsp[-2].statementNode), (yyvsp[0].statementNode)); }
 #line 1762 "parser.tab.c"
     break;
 
   case 53: /* iterationStmt: whileStmt  */
-#line 302 "parser.y"
-                              { (yyval.iterationStmtNode) = make_unique<IterationStmtNode>(move((yyvsp[0].whileStmtNode))); }
+#line 301 "parser.y"
+                              { (yyval.iterationStmtNode) = new IterationStmtNode((yyvsp[0].whileStmtNode)); }
 #line 1768 "parser.tab.c"
     break;
 
   case 54: /* iterationStmt: forStmt  */
-#line 303 "parser.y"
-                              { (yyval.iterationStmtNode) = make_unique<IterationStmtNode>(move((yyvsp[0].forStmtNode))); }
+#line 302 "parser.y"
+                              { (yyval.iterationStmtNode) = new IterationStmtNode((yyvsp[0].forStmtNode)); }
 #line 1774 "parser.tab.c"
     break;
 
   case 55: /* whileStmt: WHILE LP expression RP statement  */
-#line 306 "parser.y"
+#line 305 "parser.y"
                                                      {
-                        (yyval.whileStmtNode) = make_unique<WhileStmtNode>(move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)));
+                        (yyval.whileStmtNode) = new WhileStmtNode((yyvsp[-2].expressionNode), (yyvsp[0].statementNode));
                     }
 #line 1782 "parser.tab.c"
     break;
 
   case 56: /* forStmt: FOR LP expression SEMICOLON expression SEMICOLON expression RP statement  */
-#line 311 "parser.y"
+#line 310 "parser.y"
                                                                                              {
-                        (yyval.forStmtNode) = make_unique<ForStmtNode>(move((yyvsp[-6].expressionNode)), move((yyvsp[-4].expressionNode)), move((yyvsp[-2].expressionNode)), move((yyvsp[0].statementNode)));
+                        (yyval.forStmtNode) = new ForStmtNode((yyvsp[-6].expressionNode), (yyvsp[-4].expressionNode), (yyvsp[-2].expressionNode), (yyvsp[0].statementNode));
                     }
 #line 1790 "parser.tab.c"
     break;
 
   case 57: /* returnStmt: RETURN SEMICOLON  */
-#line 316 "parser.y"
+#line 315 "parser.y"
                                      { (yyval.returnStmtNode) = nullptr; }
 #line 1796 "parser.tab.c"
     break;
 
   case 58: /* returnStmt: RETURN expression SEMICOLON  */
-#line 317 "parser.y"
-                                                  { (yyval.returnStmtNode) = make_unique<ReturnStmtNode>(move((yyvsp[-1].expressionNode))); }
+#line 316 "parser.y"
+                                                  { (yyval.returnStmtNode) = new ReturnStmtNode((yyvsp[-1].expressionNode)); }
 #line 1802 "parser.tab.c"
     break;
 
   case 59: /* expression: var assop expression  */
-#line 320 "parser.y"
-                                         { (yyval.expressionNode) = make_unique<ExpressionNode>(move((yyvsp[-1].stringNode)), move((yyvsp[-2].varNode)), move((yyvsp[0].expressionNode))); }
+#line 319 "parser.y"
+                                         { (yyval.expressionNode) = new ExpressionNode((yyvsp[-1].stringNode), (yyvsp[-2].varNode), (yyvsp[0].expressionNode), nullptr); }
 #line 1808 "parser.tab.c"
     break;
 
   case 60: /* expression: operand  */
-#line 321 "parser.y"
-                              { (yyval.expressionNode) = make_unique<ExpressionNode>(nullptr, nullptr, move((yyvsp[0].operandNode))); }
+#line 320 "parser.y"
+                              { (yyval.expressionNode) = new ExpressionNode(nullptr, nullptr, nullptr, (yyvsp[0].operandNode)); }
 #line 1814 "parser.tab.c"
     break;
 
   case 61: /* assop: ASSIGN  */
-#line 324 "parser.y"
-                           { (yyval.stringNode) = make_unique<string>("ASSIGN"); }
+#line 323 "parser.y"
+                           { (yyval.stringNode) = new string("ASSIGN"); }
 #line 1820 "parser.tab.c"
     break;
 
   case 62: /* assop: PLUSASSIGN  */
-#line 325 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>("PLUSASSIGN"); }
+#line 324 "parser.y"
+                                 { (yyval.stringNode) = new string("PLUSASSIGN"); }
 #line 1826 "parser.tab.c"
     break;
 
   case 63: /* assop: MINUSASSIGN  */
-#line 326 "parser.y"
-                                  { (yyval.stringNode) = make_unique<string>("MINUSASSIGN"); }
+#line 325 "parser.y"
+                                  { (yyval.stringNode) = new string("MINUSASSIGN"); }
 #line 1832 "parser.tab.c"
     break;
 
   case 64: /* assop: MULTASSIGN  */
-#line 327 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>("MULTASSIGN"); }
+#line 326 "parser.y"
+                                 { (yyval.stringNode) = new string("MULTASSIGN"); }
 #line 1838 "parser.tab.c"
     break;
 
   case 65: /* assop: DIVASSIGN  */
-#line 328 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>("DIVASSIGN"); }
+#line 327 "parser.y"
+                                { (yyval.stringNode) = new string("DIVASSIGN"); }
 #line 1844 "parser.tab.c"
     break;
 
   case 66: /* assop: MODASSIGN  */
-#line 329 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>("MODASSIGN"); }
+#line 328 "parser.y"
+                                { (yyval.stringNode) = new string("MODASSIGN"); }
 #line 1850 "parser.tab.c"
     break;
 
   case 67: /* assop: BANDASSIGN  */
-#line 330 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>("BANDASSIGN"); }
+#line 329 "parser.y"
+                                 { (yyval.stringNode) = new string("BANDASSIGN"); }
 #line 1856 "parser.tab.c"
     break;
 
   case 68: /* assop: BORASSIGN  */
-#line 331 "parser.y"
-                                { (yyval.stringNode) = make_unique<string>("BORASSIGN"); }
+#line 330 "parser.y"
+                                { (yyval.stringNode) = new string("BORASSIGN"); }
 #line 1862 "parser.tab.c"
     break;
 
   case 69: /* assop: BXORASSIGN  */
-#line 332 "parser.y"
-                                 { (yyval.stringNode) = make_unique<string>("BXORASSIGN"); }
+#line 331 "parser.y"
+                                 { (yyval.stringNode) = new string("BXORASSIGN"); }
 #line 1868 "parser.tab.c"
     break;
 
   case 70: /* assop: SLASSIGN  */
-#line 333 "parser.y"
-                               { (yyval.stringNode) = make_unique<string>("SLASSIGN"); }
+#line 332 "parser.y"
+                               { (yyval.stringNode) = new string("SLASSIGN"); }
 #line 1874 "parser.tab.c"
     break;
 
   case 71: /* assop: SRASSIGN  */
-#line 334 "parser.y"
-                               { (yyval.stringNode) = make_unique<string>("SRASSIGN"); }
+#line 333 "parser.y"
+                               { (yyval.stringNode) = new string("SRASSIGN"); }
 #line 1880 "parser.tab.c"
     break;
 
   case 72: /* var: ID  */
-#line 337 "parser.y"
-                       { (yyval.varNode) = make_unique<VarNode>(make_unique<string>((yyvsp[0].type_id)), nullptr); }
+#line 336 "parser.y"
+                       { (yyval.varNode) = new VarNode(new string((yyvsp[0].type_id)), nullptr); }
 #line 1886 "parser.tab.c"
     break;
 
   case 73: /* var: ID arrayPost  */
-#line 338 "parser.y"
-                                   { (yyval.varNode) = make_unique<VarNode>(make_unique<string>((yyvsp[-1].type_id)), move((yyvsp[0].intVec))); }
+#line 337 "parser.y"
+                                   { (yyval.varNode) = new VarNode(new string((yyvsp[-1].type_id)), (yyvsp[0].intVec)); }
 #line 1892 "parser.tab.c"
     break;
 
   case 74: /* operand: operand LOR operand  */
-#line 341 "parser.y"
-                                        { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LOR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 340 "parser.y"
+                                        { (yyval.operandNode) = new OperandNode(new string("LOR"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1898 "parser.tab.c"
     break;
 
   case 75: /* operand: operand LAND operand  */
-#line 342 "parser.y"
-                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LAND"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 341 "parser.y"
+                                           { (yyval.operandNode) = new OperandNode(new string("LAND"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1904 "parser.tab.c"
     break;
 
   case 76: /* operand: operand BOR operand  */
-#line 343 "parser.y"
-                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("BOR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 342 "parser.y"
+                                          { (yyval.operandNode) = new OperandNode(new string("BOR"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1910 "parser.tab.c"
     break;
 
   case 77: /* operand: operand BXOR operand  */
-#line 344 "parser.y"
-                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("BXOR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 343 "parser.y"
+                                           { (yyval.operandNode) = new OperandNode(new string("BXOR"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1916 "parser.tab.c"
     break;
 
   case 78: /* operand: operand BAND operand  */
-#line 345 "parser.y"
-                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("BAND"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 344 "parser.y"
+                                           { (yyval.operandNode) = new OperandNode(new string("BAND"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1922 "parser.tab.c"
     break;
 
   case 79: /* operand: operand EQ operand  */
-#line 346 "parser.y"
-                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("EQ"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 345 "parser.y"
+                                         { (yyval.operandNode) = new OperandNode(new string("EQ"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1928 "parser.tab.c"
     break;
 
   case 80: /* operand: operand NEQ operand  */
-#line 347 "parser.y"
-                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("NEQ"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 346 "parser.y"
+                                          { (yyval.operandNode) = new OperandNode(new string("NEQ"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1934 "parser.tab.c"
     break;
 
   case 81: /* operand: operand LT operand  */
-#line 348 "parser.y"
-                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LT"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 347 "parser.y"
+                                         { (yyval.operandNode) = new OperandNode(new string("LT"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1940 "parser.tab.c"
     break;
 
   case 82: /* operand: operand GT operand  */
-#line 349 "parser.y"
-                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("GT"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 348 "parser.y"
+                                         { (yyval.operandNode) = new OperandNode(new string("GT"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1946 "parser.tab.c"
     break;
 
   case 83: /* operand: operand LTE operand  */
-#line 350 "parser.y"
-                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("LTE"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 349 "parser.y"
+                                          { (yyval.operandNode) = new OperandNode(new string("LTE"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1952 "parser.tab.c"
     break;
 
   case 84: /* operand: operand GTE operand  */
-#line 351 "parser.y"
-                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("GTE"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 350 "parser.y"
+                                          { (yyval.operandNode) = new OperandNode(new string("GTE"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1958 "parser.tab.c"
     break;
 
   case 85: /* operand: operand SL operand  */
-#line 352 "parser.y"
-                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("SL"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 351 "parser.y"
+                                         { (yyval.operandNode) = new OperandNode(new string("SL"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1964 "parser.tab.c"
     break;
 
   case 86: /* operand: operand SR operand  */
-#line 353 "parser.y"
-                                         { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("SR"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 352 "parser.y"
+                                         { (yyval.operandNode) = new OperandNode(new string("SR"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1970 "parser.tab.c"
     break;
 
   case 87: /* operand: operand PLUS operand  */
-#line 354 "parser.y"
-                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("PLUS"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 353 "parser.y"
+                                           { (yyval.operandNode) = new OperandNode(new string("PLUS"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1976 "parser.tab.c"
     break;
 
   case 88: /* operand: operand MINUS operand  */
-#line 355 "parser.y"
-                                            { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("MINUS"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 354 "parser.y"
+                                            { (yyval.operandNode) = new OperandNode(new string("MINUS"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1982 "parser.tab.c"
     break;
 
   case 89: /* operand: operand MULT operand  */
-#line 356 "parser.y"
-                                           { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("MULT"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 355 "parser.y"
+                                           { (yyval.operandNode) = new OperandNode(new string("MULT"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1988 "parser.tab.c"
     break;
 
   case 90: /* operand: operand DIV operand  */
-#line 357 "parser.y"
-                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("DIV"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 356 "parser.y"
+                                          { (yyval.operandNode) = new OperandNode(new string("DIV"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 1994 "parser.tab.c"
     break;
 
   case 91: /* operand: operand MOD operand  */
-#line 358 "parser.y"
-                                          { (yyval.operandNode) = make_unique<OperandNode>(make_unique<string>("MOD"), move((yyvsp[-2].operandNode)), move((yyvsp[0].operandNode))); }
+#line 357 "parser.y"
+                                          { (yyval.operandNode) = new OperandNode(new string("MOD"), (yyvsp[-2].operandNode), (yyvsp[0].operandNode), nullptr); }
 #line 2000 "parser.tab.c"
     break;
 
   case 92: /* operand: prefix LP operand RP  */
-#line 359 "parser.y"
-                                           { (yyval.operandNode) = make_unique<OperandNode>(move((yyvsp[-3].stringNode)), move((yyvsp[-1].operandNode)), nullptr); }
+#line 358 "parser.y"
+                                           { (yyval.operandNode) = new OperandNode((yyvsp[-3].stringNode), (yyvsp[-1].operandNode), nullptr, nullptr); }
 #line 2006 "parser.tab.c"
     break;
 
   case 93: /* operand: LP operand RP  */
-#line 360 "parser.y"
-                                    { (yyval.operandNode) = make_unique<OperandNode>(nullptr, move((yyvsp[-1].operandNode)), nullptr); }
+#line 359 "parser.y"
+                                    { (yyval.operandNode) = new OperandNode(nullptr, (yyvsp[-1].operandNode), nullptr, nullptr); }
 #line 2012 "parser.tab.c"
     break;
 
   case 94: /* operand: prefix single  */
-#line 361 "parser.y"
-                                    {  (yyval.operandNode) = make_unique<OperandNode>(move((yyvsp[-1].stringNode)), move((yyvsp[0].singleNode)), nullptr); }
+#line 360 "parser.y"
+                                    {  (yyval.operandNode) = new OperandNode((yyvsp[-1].stringNode), nullptr, nullptr, (yyvsp[0].singleNode)); }
 #line 2018 "parser.tab.c"
     break;
 
   case 95: /* operand: single  */
-#line 362 "parser.y"
-                             { (yyval.operandNode) = make_unique<OperandNode>(nullptr, move((yyvsp[0].singleNode)), nullptr);  }
+#line 361 "parser.y"
+                             { (yyval.operandNode) = new OperandNode(nullptr, nullptr, nullptr, (yyvsp[0].singleNode));  }
 #line 2024 "parser.tab.c"
     break;
 
   case 96: /* prefix: BNOT  */
-#line 366 "parser.y"
-                         { (yyval.stringNode) = make_unique<string>("BNOT"); }
+#line 365 "parser.y"
+                         { (yyval.stringNode) = new string("BNOT"); }
 #line 2030 "parser.tab.c"
     break;
 
   case 97: /* prefix: LNOT  */
-#line 367 "parser.y"
-                            { (yyval.stringNode) = make_unique<string>("LNOT"); }
+#line 366 "parser.y"
+                            { (yyval.stringNode) = new string("LNOT"); }
 #line 2036 "parser.tab.c"
     break;
 
   case 98: /* prefix: MINUS  */
-#line 368 "parser.y"
-                            { (yyval.stringNode) = make_unique<string>("MINUS"); }
+#line 367 "parser.y"
+                            { (yyval.stringNode) = new string("MINUS"); }
 #line 2042 "parser.tab.c"
     break;
 
   case 99: /* single: var  */
-#line 371 "parser.y"
-                        { (yyval.singleNode) = make_unique<SingleNode>( move((yyvsp[0].varNode)) ); }
+#line 370 "parser.y"
+                        { (yyval.singleNode) = new SingleNode((yyvsp[0].varNode)); }
 #line 2048 "parser.tab.c"
     break;
 
   case 100: /* single: call  */
-#line 372 "parser.y"
-                           { (yyval.singleNode) = make_unique<SingleNode>( move((yyvsp[0].callNode)) ); }
+#line 371 "parser.y"
+                           { (yyval.singleNode) = new SingleNode((yyvsp[0].callNode)); }
 #line 2054 "parser.tab.c"
     break;
 
   case 101: /* single: INT  */
-#line 373 "parser.y"
-                          { (yyval.singleNode) = make_unique<SingleNode>(make_unique<IntNode>((yyvsp[0].type_int))); }
+#line 372 "parser.y"
+                          { (yyval.singleNode) = new SingleNode(new IntNode((yyvsp[0].type_int))); }
 #line 2060 "parser.tab.c"
     break;
 
   case 102: /* single: FLOAT  */
-#line 374 "parser.y"
-                            { (yyval.singleNode) = make_unique<SingleNode>(make_unique<FloatNode>((yyvsp[0].type_float))); }
+#line 373 "parser.y"
+                            { (yyval.singleNode) = new SingleNode(new FloatNode((yyvsp[0].type_float))); }
 #line 2066 "parser.tab.c"
     break;
 
   case 103: /* single: CHAR  */
-#line 375 "parser.y"
-                           { (yyval.singleNode) = make_unique<SingleNode>(make_unique<CharNode>((yyvsp[0].type_char))); }
+#line 374 "parser.y"
+                           { (yyval.singleNode) = new SingleNode(new CharNode((yyvsp[0].type_char))); }
 #line 2072 "parser.tab.c"
     break;
 
   case 104: /* single: TRUE  */
-#line 376 "parser.y"
-                           { (yyval.singleNode) = make_unique<SingleNode>(make_unique<BoolNode>((yyvsp[0].type_bool))); }
+#line 375 "parser.y"
+                           { (yyval.singleNode) = new SingleNode(new BoolNode((yyvsp[0].type_bool))); }
 #line 2078 "parser.tab.c"
     break;
 
   case 105: /* single: FALSE  */
-#line 377 "parser.y"
-                            { (yyval.singleNode) = make_unique<SingleNode>(make_unique<BoolNode>((yyvsp[0].type_bool))); }
+#line 376 "parser.y"
+                            { (yyval.singleNode) = new SingleNode(new BoolNode((yyvsp[0].type_bool))); }
 #line 2084 "parser.tab.c"
     break;
 
   case 106: /* call: ID LP args RP  */
-#line 381 "parser.y"
+#line 380 "parser.y"
                                   {
-                        (yyval.callNode) = make_unique<CallNode>(make_unique<string>((yyvsp[-3].type_id)), move((yyvsp[-1].expressionNodeVec))));
+                        (yyval.callNode) = new CallNode(new string((yyvsp[-3].type_id)), (yyvsp[-1].expressionNodeVec));
                     }
 #line 2092 "parser.tab.c"
     break;
 
   case 107: /* args: %empty  */
-#line 385 "parser.y"
+#line 384 "parser.y"
                            { (yyval.expressionNodeVec) = nullptr; }
 #line 2098 "parser.tab.c"
     break;
 
   case 108: /* args: argList  */
-#line 386 "parser.y"
-                              { (yyval.expressionNodeVec) = move((yyvsp[0].expressionNodeVec)); }
+#line 385 "parser.y"
+                              { (yyval.expressionNodeVec) = (yyvsp[0].expressionNodeVec); }
 #line 2104 "parser.tab.c"
     break;
 
   case 109: /* argList: argList COMMA expression  */
-#line 389 "parser.y"
+#line 388 "parser.y"
                                              {
-                        (yyvsp[-2].expressionNodeVec)->push_back(move((yyvsp[0].expressionNode)));
-                        (yyval.expressionNodeVec) = move((yyvsp[-2].expressionNodeVec));
+                        (yyvsp[-2].expressionNodeVec)->push_back((yyvsp[0].expressionNode));
+                        (yyval.expressionNodeVec) = (yyvsp[-2].expressionNodeVec);
                     }
 #line 2113 "parser.tab.c"
     break;
 
   case 110: /* argList: expression  */
-#line 393 "parser.y"
+#line 392 "parser.y"
                                  {
-                        (yyval.expressionNodeVec) = make_unique<vector<unique_ptr<ExpressionNode>>>();
-                        (yyval.expressionNodeVec)->push_back(move((yyvsp[0].expressionNode)));
+                        (yyval.expressionNodeVec) = new vector<ExpressionNode*>();
+                        (yyval.expressionNodeVec)->push_back((yyvsp[0].expressionNode));
                     }
 #line 2122 "parser.tab.c"
     break;
@@ -2316,7 +2316,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 399 "parser.y"
+#line 398 "parser.y"
 
 
 int main() { 
