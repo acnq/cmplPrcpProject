@@ -2321,8 +2321,9 @@ yyreturn:
 
 int main() { 
     yyparse();
+    cout << "Program" << endl;
     for(auto p : *root) {
-        p->printNode();
+        p->printNode(1);
     }
     return 0;
 }

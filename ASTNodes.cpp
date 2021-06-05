@@ -7,7 +7,7 @@
 
 void printPrefix(int layer) {
     for(int i = layer-1; i > 0; i--) {
-        cout << "    ";
+        cout << "|   ";
     }
     cout << "|---";
 }
@@ -21,11 +21,10 @@ void DeclarationNode::printNode(int layer) {
     cout << "Declaration" << endl;
 
     if(varDecl) {
-        printPrefix(layer);
         varDecl->printNode(layer + 1);
     }
+
     if(funDecl) {
-        printPrefix(layer);
         funDecl->printNode(layer + 1);
     }
 }
@@ -39,26 +38,26 @@ void VarDeclarationNode::printNode(int layer) {
     cout << "VarDeclaration" << endl;
 
     if(baseType) {
-        printPrefix(layer);
+        printPrefix(layer + 1);
         cout << *baseType << endl;
     }
 
     if(idList) {
-        printPrefix(layer);
         for (auto p : *idList) {
             p->printNode(layer + 1);
         }
     }
 
-    if(arrayPost) {
-        printPrefix(layer);
+    if(arrayPost && !arrayPost->empty()) {
+        printPrefix(layer + 1);
+        cout << "ArrayPost" << endl;
         for (auto p : *arrayPost) {
+            printPrefix(layer + 2);
             cout << p << endl;
         }
     }
 
     if(arrayConstList) {
-        printPrefix(layer);
         for (auto p : *arrayConstList) {
             p->printNode(layer + 1);
         }
@@ -74,12 +73,11 @@ void IdListNode::printNode(int layer) {
     cout << "IdList" << endl;
     
     if(id) {
-        printPrefix(layer);
+        printPrefix(layer + 1);
         cout << *id << endl;
     }
 
     if(initExp) {
-        printPrefix(layer);
         initExp->printNode(layer + 1);
     }
 }
@@ -93,24 +91,25 @@ void FunDeclarationNode::printNode(int layer) {
     cout << "FunDeclaration" << endl;
 
     if(baseType) {
-        printPrefix(layer);
+        printPrefix(layer + 1);
         cout << *baseType << endl;
+    } else {
+        printPrefix(layer + 1);
+        cout << "void" << endl;
     }
 
     if(id) {
-        printPrefix(layer);
+        printPrefix(layer + 1);
         cout << *id << endl;
     }
 
     if(params) {
-        printPrefix(layer);
         for (auto p : *params) {
             p->printNode(layer + 1);
         }
     }
 
     if(compoundStmt) {
-        printPrefix(layer);
         compoundStmt->printNode(layer + 1);
     }
 }
@@ -121,16 +120,25 @@ Value * ParamNode::codeGen() {
 
 void ParamNode::printNode(int layer) {
     printPrefix(layer);
-    cout << "This is Param" << endl;
+    cout << "Param" << endl;
 
     if(baseType) {
-        printPrefix(layer);
+        printPrefix(layer + 1);
         cout << *baseType << endl;
     }
 
     if(id) {
-        printPrefix(layer);
+        printPrefix(layer + 1);
         cout << *id << endl;
+    }
+
+    if(arrayPostParam && !arrayPostParam->empty()) {
+        printPrefix(layer + 1);
+        cout << "ArrayPostParam" << endl;
+        for (auto p : *arrayPostParam) {
+            printPrefix(layer + 2);
+            cout << p << endl;
+        }
     }
 }
 
@@ -139,7 +147,20 @@ Value * CompoundStmtNode::codeGen() {
 }
 
 void CompoundStmtNode::printNode(int layer) {
-    cout << "This is CompoundStmt" << endl;
+    printPrefix(layer);
+    cout << "CompoundStmt" << endl;
+
+    if(localDeclarations) {
+        for (auto p : *localDeclarations) {
+            p->printNode(layer + 1);
+        }
+    }
+
+    if(statementList) {
+        for (auto p : *statementList) {
+            p->printNode(layer + 1);
+        }
+    }
 }
 
 Value * StatementNode::codeGen() {
@@ -147,7 +168,29 @@ Value * StatementNode::codeGen() {
 }
 
 void StatementNode::printNode(int layer) {
-    cout << "This is Statement" << endl;
+    printPrefix(layer);
+    cout << "Statement" << endl;
+
+    if(expNode) {
+        expNode->printNode(layer + 1);
+    }
+
+    if(compNode) {
+        compNode->printNode(layer + 1);
+    }
+    
+    if(selNode) {
+        selNode->printNode(layer + 1);
+    }
+    
+    if(iterNode) {
+        iterNode->printNode(layer + 1);
+    }
+    
+    if(retNode) {
+        retNode->printNode(layer + 1);
+    }
+    
 }
 
 Value * SelectionStmtNode::codeGen() {
@@ -155,7 +198,20 @@ Value * SelectionStmtNode::codeGen() {
 }
 
 void SelectionStmtNode::printNode(int layer) {
-    cout << "This is SelectionStmt" << endl;
+    printPrefix(layer);
+    cout << "SelectionStmt" << endl;
+
+    if(condition) {
+        condition->printNode(layer + 1);
+    }
+
+    if(ifPart) {
+        ifPart->printNode(layer + 1);
+    }
+
+    if(ifPart) {
+        ifPart->printNode(layer + 1);
+    }
 }
 
 Value * IterationStmtNode::codeGen() {
@@ -163,7 +219,16 @@ Value * IterationStmtNode::codeGen() {
 }
 
 void IterationStmtNode::printNode(int layer) {
-    cout << "This is IterationStmt" << endl;
+    printPrefix(layer);
+    cout << "IterationStmt" << endl;
+
+    if(whileNode) {
+        whileNode->printNode(layer + 1);
+    }
+
+    if(forNode) {
+        forNode->printNode(layer + 1);
+    }
 }
 
 Value * WhileStmtNode::codeGen() {
@@ -171,7 +236,16 @@ Value * WhileStmtNode::codeGen() {
 }
 
 void WhileStmtNode::printNode(int layer) {
-    cout << "This is WhileStmt" << endl;
+    printPrefix(layer);
+    cout << "WhileStmt" << endl;
+
+    if(condition) {
+        condition->printNode(layer + 1);
+    }
+
+    if(statement) {
+        statement->printNode(layer + 1);
+    }
 }
 
 Value * ForStmtNode::codeGen() {
@@ -179,7 +253,24 @@ Value * ForStmtNode::codeGen() {
 }
 
 void ForStmtNode::printNode(int layer) {
-    cout << "This is ForStmt" << endl;
+    printPrefix(layer);
+    cout << "ForStmt" << endl;
+
+    if(first) {
+        first->printNode(layer + 1);
+    }
+
+    if(second) {
+        second->printNode(layer + 1);
+    }
+
+    if(third) {
+        third->printNode(layer + 1);
+    }
+
+    if(statement) {
+        statement->printNode(layer + 1);
+    }
 }
 
 Value * ReturnStmtNode::codeGen() {
@@ -187,7 +278,12 @@ Value * ReturnStmtNode::codeGen() {
 }
 
 void ReturnStmtNode::printNode(int layer) {
-    cout << "This is ReturnStmt" << endl;
+    printPrefix(layer);
+    cout << "ReturnStmt" << endl;
+
+    if(returnExp) {
+        returnExp->printNode(layer + 1);
+    }
 }
 
 Value * ExpressionNode::codeGen() {
@@ -195,7 +291,25 @@ Value * ExpressionNode::codeGen() {
 }
 
 void ExpressionNode::printNode(int layer) {
-    cout << "This is Expression" << endl;
+    printPrefix(layer);
+    cout << "Expression" << endl;
+
+    if(op) {
+        printPrefix(layer + 1);
+        cout << *op << endl;
+    }
+
+    if(var) {
+        var->printNode(layer + 1);
+    }
+
+    if(expression) {
+        expression->printNode(layer + 1);
+    }
+
+    if(operand) {
+        operand->printNode(layer + 1);
+    }
 }
 
 Value * VarNode::codeGen() {
@@ -203,7 +317,22 @@ Value * VarNode::codeGen() {
 }
 
 void VarNode::printNode(int layer) {
-    cout << "This is Var" << endl;
+    printPrefix(layer);
+    cout << "Var" << endl;
+
+    if(id) {
+        printPrefix(layer + 1);
+        cout << *id << endl;
+    }
+
+    if(arrayPost && !arrayPost->empty()) {
+        printPrefix(layer + 1);
+        cout << "ArrayPost" << endl;
+        for (auto p : *arrayPost) {
+            printPrefix(layer + 2);
+            cout << p << endl;
+        }
+    }
 }
 
 Value * OperandNode::codeGen() {
@@ -211,7 +340,25 @@ Value * OperandNode::codeGen() {
 }
 
 void OperandNode::printNode(int layer) {
-    cout << "This is Operand" << endl;
+    printPrefix(layer);
+    cout << "Operand" << endl;
+
+    if(op) {
+        printPrefix(layer + 1);
+        cout << *op << endl;
+    }
+    
+    if(lhs) {
+        lhs->printNode(layer + 1);
+    }
+
+    if(rhs) {
+        rhs->printNode(layer + 1);
+    }
+
+    if(single) {
+        single->printNode(layer + 1);
+    }
 }
 
 Value * SingleNode::codeGen() {
@@ -219,7 +366,32 @@ Value * SingleNode::codeGen() {
 }
 
 void SingleNode::printNode(int layer) {
-    cout << "This is Single" << endl;
+    printPrefix(layer);
+    cout << "Single" << endl;
+
+    if(varNode) {
+        varNode->printNode(layer + 1);
+    }
+
+    if(callNode) {
+        callNode->printNode(layer + 1);
+    }
+
+    if(intNode) {
+        intNode->printNode(layer + 1);
+    }
+    
+    if(floatNode) {
+        floatNode->printNode(layer + 1);
+    }
+
+    if(charNode) {
+        charNode->printNode(layer + 1);
+    }
+
+    if(boolNode) {
+        boolNode->printNode(layer + 1);
+    }
 }
 
 Value * CallNode::codeGen() {
@@ -227,7 +399,19 @@ Value * CallNode::codeGen() {
 }
 
 void CallNode::printNode(int layer) {
-    cout << "This is Call" << endl;
+    printPrefix(layer);
+    cout << "Call" << endl;
+
+    if(id) {
+        printPrefix(layer + 1);
+        cout << *id << endl;
+    }
+
+    if(args) {
+        for (auto p : *args) {
+            p->printNode(layer + 1);
+        }
+    }
 }
 
 Value * IntNode::codeGen() {
@@ -235,7 +419,8 @@ Value * IntNode::codeGen() {
 }
 
 void IntNode::printNode(int layer) {
-    cout << "This is Int" << endl;
+    printPrefix(layer);
+    cout << "Int: " << value << endl;
 }
 
 Value * FloatNode::codeGen() {
@@ -243,7 +428,8 @@ Value * FloatNode::codeGen() {
 }
 
 void FloatNode::printNode(int layer) {
-    cout << "This is Float" << endl;
+    printPrefix(layer);
+    cout << "Float: " << value << endl;
 }
 
 Value * CharNode::codeGen() {
@@ -251,7 +437,8 @@ Value * CharNode::codeGen() {
 }
 
 void CharNode::printNode(int layer) {
-    cout << "This is Char" << endl;
+    printPrefix(layer);
+    cout << "Char: " << value << endl;
 }
 
 Value * BoolNode::codeGen() {
@@ -259,5 +446,6 @@ Value * BoolNode::codeGen() {
 }
 
 void BoolNode::printNode(int layer) {
-    cout << "This is Bool" << endl;
+    printPrefix(layer);
+    cout << "Bool: " << value << endl;
 }

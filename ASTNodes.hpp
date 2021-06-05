@@ -33,7 +33,7 @@ class Node {
 public:
     virtual ~Node() = default;
     virtual Value * codeGen() = 0;
-    virtual void printNode(void) = 0;
+    virtual void printNode(int layer) = 0;
 };
 
 class DeclarationNode : public Node {
@@ -46,7 +46,7 @@ public:
     DeclarationNode(FunDeclarationNode *node):funDecl(node) {};
     
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class VarDeclarationNode : public Node {
@@ -65,7 +65,7 @@ public:
     ):baseType(baseType), idList(idList), arrayPost(arrayPost), arrayConstList(arrayConstList) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class IdListNode : public Node {
@@ -80,7 +80,7 @@ public:
     ):id(id), initExp(initExp) {}; 
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 // class ArrayInitListNode : public Node {
@@ -107,7 +107,7 @@ public:
     ):baseType(baseType), id(id), params(params), compoundStmt(compoundStmt), isExtern(isExtern) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class ParamNode : public Node {
@@ -124,7 +124,7 @@ public:
     ):baseType(baseType), id(id), arrayPostParam(arrayPostParam) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class CompoundStmtNode : public Node {
@@ -139,7 +139,7 @@ public:
     ):localDeclarations(localDeclarations), statementList(statementList) {};
     
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class StatementNode : public Node {
@@ -158,7 +158,7 @@ public:
     StatementNode(ReturnStmtNode *statement):retNode(statement) {};
     
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class SelectionStmtNode : public Node {
@@ -175,7 +175,7 @@ public:
     ):condition(condition), ifPart(ifPart), elsePart(elsePart) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class IterationStmtNode : public Node {
@@ -188,7 +188,7 @@ public:
     IterationStmtNode(ForStmtNode *iterationStmt):forNode(iterationStmt) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class WhileStmtNode : public Node {
@@ -203,7 +203,7 @@ public:
     ):condition(condition), statement(statement) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class ForStmtNode : public Node {
@@ -222,7 +222,7 @@ public:
     ):first(first), second(second), third(third), statement(statement) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class ReturnStmtNode : public Node {
@@ -233,7 +233,7 @@ public:
     ReturnStmtNode(ExpressionNode *returnExp):returnExp(returnExp) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class ExpressionNode : public Node {
@@ -252,7 +252,7 @@ public:
     ):op(op), var(var), expression(expression), operand(operand) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class VarNode : public Node {
@@ -267,7 +267,7 @@ public:
     ):id(id), arrayPost(arrayPost) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class OperandNode : public Node {
@@ -286,7 +286,7 @@ public:
     ):op(op), lhs(lhs), rhs(rhs), single(single) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class SingleNode : public Node {
@@ -299,15 +299,15 @@ public:
     BoolNode *boolNode = nullptr;
 
     SingleNode() {};
-    SingleNode(VarNode *signle):varNode(signle) {};
-    SingleNode(CallNode *signle):callNode(signle) {};
-    SingleNode(IntNode *signle):intNode(signle) {};
-    SingleNode(FloatNode *signle):floatNode(signle) {};
-    SingleNode(CharNode *signle):charNode(signle) {};
-    SingleNode(BoolNode *signle):boolNode(signle) {};
+    SingleNode(VarNode * single):varNode(single) {};
+    SingleNode(CallNode *single):callNode(single) {};
+    SingleNode(IntNode *single):intNode(single) {};
+    SingleNode(FloatNode *single):floatNode(single) {};
+    SingleNode(CharNode *single):charNode(single) {};
+    SingleNode(BoolNode *single):boolNode(single) {};
     
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class CallNode : public Node {
@@ -322,7 +322,7 @@ public:
     ):id(id), args(args) {};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class IntNode : public Node {
@@ -333,7 +333,7 @@ public:
     IntNode(int value):value(value){};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class FloatNode : public Node {
@@ -344,7 +344,7 @@ public:
     FloatNode(double value):value(value){};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class CharNode : public Node {
@@ -355,7 +355,7 @@ public:
     CharNode(char value):value(value){};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
 
 class BoolNode : public Node {
@@ -366,5 +366,5 @@ public:
     BoolNode(bool value):value(value){};
 
     Value * codeGen();
-    void printNode(void);
+    void printNode(int layer);
 };
