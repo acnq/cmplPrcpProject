@@ -149,15 +149,17 @@ declaration:        varDeclaration { $$ = make_unique<DeclarationNode>(move($1))
                     | funDeclaration  { $$ = make_unique<DeclarationNode>(move($1)); }
                     ;
 
-varDeclaration:     baseType idList SEMICOLON { $$ = make_unique<VarDeclarationNode>(move($1), move($2), nullptr, nullptr); }
+varDeclaration:     baseType idList SEMICOLON { 
+                        $$ = make_unique<VarDeclarationNode>(move($1), move($2), nullptr, nullptr);
+                    }
                     | baseType ID arrayPost SEMICOLON {
                         $$ = make_unique<vector<unique_ptr<IdListNode>>>();
-                        $$-> push_back(move($2));
+                        $$-> push_back( make_unique<IdListNode>(make_unique<string>($2), nullptr) );
                         $$ = make_unique<VarDeclarationNode>(move($1), move($$), move($3), nullptr);
                     }
 	                | baseType ID arrayPost ASSIGN LC arrayConstList RC SEMICOLON {
                         $$ = make_unique<vector<unique_ptr<IdListNode>>>();
-                        $$-> push_back(move($2));
+                        $$-> push_back( make_unique<IdListNode>(make_unique<string>($2), nullptr) );
                         $$ = make_unique<VarDeclarationNode>(move($1), move($$), move($3), move($6));
                     }
                     ;
