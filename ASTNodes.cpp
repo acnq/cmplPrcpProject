@@ -4,138 +4,146 @@
 #include <string>
 #include "ASTNodes.hpp"
 
-declarationNode::declarationNode() {
+DeclarationNode::DeclarationNode() {
 
 }
 
-Value * declarationNode::codeGen() {
+Value * DeclarationNode::codeGen() {
 
 }
 
-varDeclarationNode::varDeclarationNode() {
+VarDeclarationNode::VarDeclarationNode() {
 
 }
 
-Value * varDeclarationNode::codeGen() {
+Value * VarDeclarationNode::codeGen() {
 
 }
 
-idListNode::idListNode() {
+IdListNode::IdListNode() {
 
 }
 
-Value * idListNode::codeGen() {
+Value * IdListNode::codeGen() {
 
 }
 
-arrayInitListNode::arrayInitListNode() {
+// ArrayInitListNode::ArrayInitListNode() {
+
+// }
+
+// Value * ArrayInitListNode::codeGen() {
+
+// }
+
+FunDeclarationNode::FunDeclarationNode() {
 
 }
 
-Value * arrayInitListNode::codeGen() {
+Value * FunDeclarationNode::codeGen() {
+    int a[2][2] = { {3, 4}, {4, 8} };
+}
+
+ParamNode::ParamNode() {
 
 }
 
-funDeclarationNode::funDeclarationNode() {
+Value * ParamNode::codeGen() {
 
 }
 
-Value * funDeclarationNode::codeGen() {
+CompoundStmtNode::CompoundStmtNode() {
 
 }
 
-paramNode::paramNode() {
+Value * CompoundStmtNode::codeGen() {
 
 }
 
-Value * paramNode::codeGen() {
+StatementNode::StatementNode() {
 
 }
 
-compoundStmtNode::compoundStmtNode() {
+Value * StatementNode::codeGen() {
 
 }
 
-Value * compoundStmtNode::codeGen() {
+SelectionStmtNode::SelectionStmtNode() {
 
 }
 
-statementNode::statementNode() {
+Value * SelectionStmtNode::codeGen() {
 
 }
 
-Value * statementNode::codeGen() {
+IterationStmtNode::IterationStmtNode() {
 
 }
 
-selectionStmtNode::selectionStmtNode() {
+Value * IterationStmtNode::codeGen() {
 
 }
 
-Value * selectionStmtNode::codeGen() {
+WhileStmtNode::WhileStmtNode() {
 
 }
 
-whileStmtNode::whileStmtNode() {
+Value * WhileStmtNode::codeGen() {
 
 }
 
-Value * whileStmtNode::codeGen() {
+ForStmtNode::ForStmtNode() {
 
 }
 
-forStmtNode::forStmtNode() {
+Value * ForStmtNode::codeGen() {
 
 }
 
-Value * forStmtNode::codeGen() {
+ReturnStmtNode::ReturnStmtNode() {
 
 }
 
-returnStmtNode::returnStmtNode() {
+Value * ReturnStmtNode::codeGen() {
 
 }
 
-Value * returnStmtNode::codeGen() {
+ExpressionNode::ExpressionNode() {
 
 }
 
-expressionNode::expressionNode() {
+Value * ExpressionNode::codeGen() {
 
 }
 
-Value * expressionNode::codeGen() {
+VarNode::VarNode() {
 
 }
 
-varNode::varNode() {
+Value * VarNode::codeGen() {
 
 }
 
-Value * varNode::codeGen() {
+OperandNode::OperandNode() {
 
 }
 
-operandNode::operandNode() {
+Value * OperandNode::codeGen() {
 
 }
 
-Value * operandNode::codeGen() {
+SingleNode::SingleNode() {
 
 }
 
-singleNode::singleNode() {
+Value * SingleNode::codeGen() {
 
 }
 
-Value * singleNode::codeGen() {
+CallNode::CallNode() {
 
 }
 
-callNode::callNode() {
-
-}
-
-Value * callNode::codeGen() {
+Value * CallNode::codeGen() {
 
 }

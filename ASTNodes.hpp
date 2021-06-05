@@ -13,104 +13,113 @@ public:
 
 };
 
-class declarationNode : public Node {
+class DeclarationNode : public Node {
 public:
-    declarationNode();
+    DeclarationNode();
     Value * codeGen();
 };
 
-class varDeclarationNode : public Node {
+class VarDeclarationNode : public Node {
 public:
-    varDeclarationNode();
+    VarDeclarationNode();
     Value * codeGen();
 };
 
-class idListNode : public Node {
+class IdListNode : public Node {
 public:
-    idListNode();
+    IdListNode();
     Value * codeGen();
 };
 
-class arrayInitListNode : public Node {
+// class ArrayInitListNode : public Node {
+// public:
+//     ArrayInitListNode();
+//     Value * codeGen();
+// };
+
+class FunDeclarationNode : public Node {
 public:
-    arrayInitListNode();
+    FunDeclarationNode();
     Value * codeGen();
 };
 
-class funDeclarationNode : public Node {
+class ParamNode : public Node {
 public:
-    funDeclarationNode();
+    ParamNode();
     Value * codeGen();
 };
 
-class paramNode : public Node {
+class CompoundStmtNode : public Node {
 public:
-    paramNode();
+    CompoundStmtNode();
     Value * codeGen();
 };
 
-class compoundStmtNode : public Node {
+class StatementNode : public Node {
 public:
-    compoundStmtNode();
+    StatementNode();
     Value * codeGen();
 };
 
-class statementNode : public Node {
+class SelectionStmtNode : public Node {
 public:
-    statementNode();
+    SelectionStmtNode();
     Value * codeGen();
 };
 
-class selectionStmtNode : public Node {
+class IterationStmtNode : public Node {
 public:
-    selectionStmtNode();
+    IterationStmtNode();
     Value * codeGen();
 };
 
-class whileStmtNode : public Node {
+class WhileStmtNode : public Node {
 public:
-    whileStmtNode();
+    WhileStmtNode();
     Value * codeGen();
 };
 
-class forStmtNode : public Node {
+class ForStmtNode : public Node {
 public:
-    forStmtNode();
+    ForStmtNode();
     Value * codeGen();
 };
 
-class returnStmtNode : public Node {
+class ReturnStmtNode : public Node {
 public:
-    returnStmtNode();
+    ReturnStmtNode();
     Value * codeGen();
 };
 
-class expressionNode : public Node {
+class ExpressionNode : public Node {
 public:
-    expressionNode();
+    ExpressionNode();
     Value * codeGen();
 };
 
-class varNode : public Node {
+class VarNode : public Node {
 public:
-    varNode();
+    VarNode();
     Value * codeGen();
 };
 
-class operandNode : public Node {
+class OperandNode : public Node {
 public:
-    operandNode();
+    OperandNode();
     Value * codeGen();
 };
 
-class singleNode : public Node {
+class SingleNode : public Node {
 public:
-    singleNode();
+    SingleNode();
     Value * codeGen();
 };
 
-class callNode : public Node {
+class CallNode : public Node {
 public:
-    callNode();
+    unique_ptr<string> id;
+    unique_ptr<vector<unique_ptr<ExpressionNode>>> args;
+
+    CallNode();
     Value * codeGen();
 };
