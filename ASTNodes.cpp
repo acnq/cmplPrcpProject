@@ -120,7 +120,7 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
                 // Value * result = node->initExp->codeGen();
                 // Value * tmp = Builder.CreateLoad(variable);
                 // Builder.CreateStore(result, tmp);
-                Builder.CreateStore(ConstantInt::get(TheContext, APInt(12, 32)), variable);
+                Builder.CreateStore(ConstantInt::get(TheContext, APInt(32, 1)), variable);
             }
             cout << "after init" << endl;
         }
@@ -149,7 +149,7 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
         varTable.back()[*(idList->at(0)->id)] = pair<Value *, vector<int> >(variable, *arrayPost);
         if(arrayConstList) {
             for(int i = 0; i < arrayConstList->size(); i++)
-                Builder.CreateStore(arrayConstList->at(i)->codeGen(), Builder.CreateGEP(variable, ConstantInt::get(TheContext, APInt(i, 32))));
+                Builder.CreateStore(arrayConstList->at(i)->codeGen(), Builder.CreateGEP(variable, ConstantInt::get(TheContext, APInt(32, i))));
         }
     }
     return nullptr; ///////////////////////////////////////////////////////////////////////可能有问题
@@ -207,17 +207,18 @@ void IdListNode::printNode(int layer) {
 Value * FunDeclarationNode::codeGen() {
     cout << "Running codeGen for FunDeclaration." << endl;
     vector<Type *> argTypes;
-
-    for(auto param : *params) {
-        int size = 1;
-        if(param->arrayPost) {
-            for(auto i : *param->arrayPost)
-                size *= i;
-            argTypes.push_back(ArrayType::get(str2type(*(param->baseType)), size));
+    if(params)
+        for(auto param : *params) {
+            int size = 1;
+            if(param->arrayPost) {
+                for(auto i : *param->arrayPost)
+                    size *= i;
+                argTypes.push_back(ArrayType::get(str2type(*(param->baseType)), size));
+            }
+            else
+                argTypes.push_back(str2type(*(param->baseType)));
         }
-        else
-            argTypes.push_back(str2type(*(param->baseType)));
-    }
+
     Type * thisType = (baseType == nullptr)? Type::getVoidTy(TheContext) : str2type(*baseType);
     FunctionType * FT = FunctionType::get(thisType, argTypes, false);    ///////// To do:检查多维数组形状
 
@@ -339,8 +340,9 @@ Value * CompoundStmtNode::codeGen() {
     if(statementList)
         for(auto node : * statementList)
             node->codeGen();
-    Builder.CreateBr(afterBlock);
-    Builder.SetInsertPoint(afterBlock);
+//    Builder.CreateBr(afterBlock);
+//    Builder.SetInsertPoint(afterBlock);
+    return nullptr;
 }
 
 void CompoundStmtNode::printNode(int layer) {
@@ -420,18 +422,21 @@ Value * SelectionStmtNode::codeGen() {
     TheFunction->getBasicBlockList().push_back(elseBlock);
     Builder.SetInsertPoint(elseBlock);
 
-    Value *elseValue = elsePart->codeGen();
+    Value *elseValue;
+    if(elsePart)
+        elseValue = elsePart->codeGen();
 
     Builder.CreateBr(afterBlock);
     elseBlock = Builder.GetInsertBlock();
 
     TheFunction->getBasicBlockList().push_back(afterBlock);
     Builder.SetInsertPoint(afterBlock);
-    PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(TheContext), 2, "iftmp");
+//    PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(TheContext), 2, "iftmp");
 
-    PN->addIncoming(ifValue, ifBlock);
-    PN->addIncoming(elseValue, elseBlock);
-    return PN;
+//    PN->addIncoming(ifValue, ifBlock);
+//    PN->addIncoming(elseValue, elseBlock);
+//    return PN;
+    return nullptr;
 }
 
 void SelectionStmtNode::printNode(int layer) {
@@ -656,10 +661,11 @@ void ExpressionNode::printNode(int layer) {
 
 Value * VarNode::codeGen() {
     cout << "Running codeGen for VarNode." << endl;
-    if(arrayPost == nullptr)
-        for(auto it = varTable.rbegin(); it != varTable.rend(); it++)
-            if((*it).count(*id) > 0)
+    if(arrayPost == nullptr) {
+        for (auto it = varTable.rbegin(); it != varTable.rend(); it++)
+            if ((*it).count(*id) > 0)
                 return (*it)[*id].first;
+    }
     else {
         Value * array;
         vector<int> size;
@@ -684,7 +690,7 @@ Value * VarNode::codeGen() {
         int ind = 0;
         for(int i = size.size() - 1; i >= 0; i--)
             ind = ind * products[i+1] + products[i];
-        return Builder.CreateGEP(array, ConstantInt::get(TheContext, APInt(ind, 32)));
+        return Builder.CreateGEP(array, ConstantInt::get(TheContext, APInt(32, ind)));
     }
 }
 
@@ -952,7 +958,7 @@ void CallNode::printNode(int layer) {
 Value * IntNode::codeGen() {
     cout << "Running codeGen for Int." << endl;
     // APInt(uint64_t *val, unsigned int bits)
-    return ConstantInt::get(TheContext, APInt(value, 32));
+    return ConstantInt::get(TheContext, APInt(32, value));
 }
 
 void IntNode::printNode(int layer) {
@@ -973,7 +979,7 @@ void FloatNode::printNode(int layer) {
 Value * CharNode::codeGen() {
     cout << "Running codeGen for Char." << endl;
     // APInt(uint64_t *val, unsigned int bits)
-    return ConstantInt::get(TheContext, APInt(value, 8));
+    return ConstantInt::get(TheContext, APInt(8, value));
 }
 
 void CharNode::printNode(int layer) {
