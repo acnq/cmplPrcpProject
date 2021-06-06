@@ -1,19 +1,21 @@
-int arr[12] = {1, 4, 5};
+int tmp = 1;
 
-extern void printf(char str[]);
+// int arr[12] = {1, 4, 5};
 
-int main(void) {
-    int a = 10;
-    int b = 0;
-    int i;
+// extern void printf(char str[]);
 
-    for (i = 0; i < a; i += 1) {
-        if( i % 2 == 0) {
-            b += 1;
-        }
-    }
+// int main(void) {
+//     int a = 10;
+//     int b = 0;
+//     int i;
 
-    a += 2;
+//     for (i = 0; i < a; i += 1) {
+//         if( i % 2 == 0) {
+//             b += 1;
+//         }
+//     }
 
-    return a;
-}
+//     a += 2;
+
+//     return a;
+// }

@@ -41,16 +41,17 @@ static bool typeNoSmaller(Type * t1, Type * t2) {
 
 static Type * str2type(string str) {
     Type * retType;
-    if(str == "BOOL_type")
+    if(str == "BOOL_TYPE")
         retType = Type::getInt1Ty(*TheContext);
-    else if(str == "CHAR_type")
+    else if(str == "CHAR_TYPE")
         retType = Type::getInt8Ty(*TheContext);
-    else if(str == "INT_type")
+    else if(str == "INT_TYPE")
         retType = Type::getInt32Ty(*TheContext);
-    else if(str == "FLOAT_type")
+    else if(str == "FLOAT_TYPE")
         retType = Type::getFloatTy(*TheContext);
-    else if(str == "VOID_type")
+    else if(str == "VOID_TYPE")
         retType = Type::getVoidTy(*TheContext);
+    return retType;
 }
 
 void printPrefix(int layer) {
@@ -61,10 +62,11 @@ void printPrefix(int layer) {
 }
 
 Value * DeclarationNode::codeGen() {
+    cout << "Running codeGen for Declaration." << endl;
     if(funDecl)
         return funDecl->codeGen();
     else if(varDecl)
-        return varDecl->codeGen();
+        return varDecl->codeGen(true);
 }
 
 void DeclarationNode::printNode(int layer) {
@@ -80,22 +82,69 @@ void DeclarationNode::printNode(int layer) {
     }
 }
 
-Value * VarDeclarationNode::codeGen() {
+Value * VarDeclarationNode::codeGen(bool global=false) {
+    cout << "Running codeGen for VarDeclaration." << endl;
     Type * thisType = str2type(*baseType);
-    Function * outerLayer = Builder->GetInsertBlock()->getParent();
+    cout << "This Type: " << type2int(thisType) << endl;
+    Function * outerLayer;
+    if(!global)
+         outerLayer = Builder->GetInsertBlock()->getParent();
     if(arrayPost == nullptr && arrayConstList == nullptr) {
         for(auto node : *idList) {
-            AllocaInst * variable = CreateEntryBlockAlloca(outerLayer, thisType, *(node->id));
+            Value * variable = nullptr;
+
+            if(!global)
+                variable = CreateEntryBlockAlloca(outerLayer, thisType, *(node->id));
+            else {
+                cout << "in else: " << endl;
+                cout << "This Type: " << type2int(thisType) << endl;
+                cout << (thisType == Type::getInt32Ty(*TheContext)) << endl;
+                cout << (thisType == Type::getFloatTy(*TheContext)) << endl;
+                variable = new GlobalVariable(
+                    *TheModule, thisType, false, GlobalValue::InternalLinkage, 
+                    ConstantAggregateZero::get(thisType), *(node->id)
+                );
+                cout << "Var type: " << type2int(variable->getType()) << endl;
+                cout << variable->getType()->getTypeID() << endl;
+                cout << ((PointerType *)(variable->getType()))->getElementType()->getTypeID() << endl;
+            }
+            cout << "after else" << endl;
             varTable.back()[*(node->id)] = pair<Value *, vector<int> >(variable, vector<int>());
-            if(node->initExp)
-                Builder->CreateStore(node->initExp->codeGen(), variable);
+            if(node->initExp) {
+                cout << "in init" << endl;
+                cout << "Node type: " << type2int(node->initExp->codeGen()->getType()) << endl;
+                cout << "Var type: " << type2int(variable->getType()) << endl;
+                // cout << node->initExp->codeGen()->getType()->getTypeID() << endl;
+                // Value * tmp = Builder->CreatePointerCast(node->initExp->codeGen(), variable->getType());
+                // Value * result = node->initExp->codeGen();
+                // Value * tmp = Builder->CreateLoad(variable);
+                // Builder->CreateStore(result, tmp);
+                Builder->CreateStore(ConstantInt::get(*TheContext, APInt(12, 32)), variable);
+            }
+            cout << "after init" << endl;
         }
     }
     else {
+        cout << 2 << endl;
         int size = 1;
         for(auto i : *arrayPost)
             size *= i;
-        AllocaInst * variable = CreateEntryBlockAlloca(outerLayer, ArrayType::get(thisType, size), *(idList->at(0)->id));
+        cout << "Size: " << size << endl;
+        Value * variable = nullptr;
+        if(!global)
+            variable = CreateEntryBlockAlloca(outerLayer, ArrayType::get(thisType, size), *(idList->at(0)->id));
+        else {
+            cout << "In else: " << endl;
+            // variable = new GlobalVariable(
+            //     *TheModule, thisType, false, GlobalValue::InternalLinkage, 
+            //     ConstantAggregateZero::get(thisType), *(idList->at(0)->id)
+            // );
+            variable = new GlobalVariable(
+                *TheModule, ArrayType::get(thisType, size), false, GlobalValue::InternalLinkage, 
+                ConstantAggregateZero::get(ArrayType::get(thisType, size)), *(idList->at(0)->id)
+            );
+        }
+        cout << "Size: " << size << endl;
         varTable.back()[*(idList->at(0)->id)] = pair<Value *, vector<int> >(variable, *arrayPost);
         if(arrayConstList) {
             for(int i = 0; i < arrayConstList->size(); i++)
@@ -155,6 +204,7 @@ void IdListNode::printNode(int layer) {
 }
 
 Value * FunDeclarationNode::codeGen() {
+    cout << "Running codeGen for FunDeclaration." << endl;
     vector<Type *> argTypes;
     for(auto param : *params) {
         int size = 1;
@@ -245,6 +295,7 @@ void ParamNode::printNode(int layer) {
 }
 
 Value * FunctionBodyNode::codeGen(BasicBlock * afterBlock) {
+    cout << "Running codeGen for FunctionBody." << endl;
     if(localDeclarations)
         for(auto node : * localDeclarations)
             node->codeGen();
@@ -273,6 +324,7 @@ void FunctionBodyNode::printNode(int layer) {
 }
 
 Value * CompoundStmtNode::codeGen() {
+    cout << "Running codeGen for CompoundStmt." << endl;
     varTable.push_back(map<string, pair<Value *, vector<int> > > ());
     Function * context = Builder->GetInsertBlock()->getParent();
     BasicBlock * currBlock = BasicBlock::Create(*TheContext, "intoBlock", context);
@@ -306,6 +358,7 @@ void CompoundStmtNode::printNode(int layer) {
 }
 
 Value * StatementNode::codeGen() {
+    cout << "Running codeGen for Statement." << endl;
     if(expNode != nullptr)
         return expNode->codeGen();
     else if(compNode != nullptr)
@@ -345,6 +398,7 @@ void StatementNode::printNode(int layer) {
 }
 
 Value * SelectionStmtNode::codeGen() {
+    cout << "Running codeGen for SelectionStmt." << endl;
     Value * cond = condition->codeGen();
     Function *TheFunction = Builder->GetInsertBlock()->getParent();
     BasicBlock *ifBlock = BasicBlock::Create(*TheContext, "if", TheFunction);
@@ -395,6 +449,7 @@ void SelectionStmtNode::printNode(int layer) {
 }
 
 Value * IterationStmtNode::codeGen() {
+    cout << "Running codeGen for IterationStmt." << endl;
     if(whileNode)
         return whileNode->codeGen();
     else if(forNode)
@@ -415,6 +470,7 @@ void IterationStmtNode::printNode(int layer) {
 }
 
 Value * WhileStmtNode::codeGen() {
+    cout << "Running codeGen for WhileStmt." << endl;
     Function *TheFunction = Builder->GetInsertBlock()->getParent();
     BasicBlock *mainBlock = BasicBlock::Create(*TheContext, "whileLoop", TheFunction);
 
@@ -447,6 +503,7 @@ void WhileStmtNode::printNode(int layer) {
 }
 
 Value * ForStmtNode::codeGen() {
+    cout << "Running codeGen for ForStmt." << endl;
     first->codeGen();
     Function *TheFunction = Builder->GetInsertBlock()->getParent();
     BasicBlock *mainBlock = BasicBlock::Create(*TheContext, "forLoop", TheFunction);
@@ -489,6 +546,7 @@ void ForStmtNode::printNode(int layer) {
 }
 
 Value * ReturnStmtNode::codeGen() {
+    cout << "Running codeGen for ReturnStmt." << endl;
     Value * ret = returnExp->codeGen();
     return Builder->CreateRet(ret);
 }
@@ -503,6 +561,7 @@ void ReturnStmtNode::printNode(int layer) {
 }
 
 Value * ExpressionNode::codeGen() {
+    cout << "Running codeGen for ExpressionNode." << endl;
     if(operand)
         return operand->codeGen();
     else {
@@ -608,6 +667,7 @@ void ExpressionNode::printNode(int layer) {
 }
 
 Value * VarNode::codeGen() {
+    cout << "Running codeGen for VarNode." << endl;
     if(arrayPost == nullptr)
         for(auto it = varTable.rbegin(); it != varTable.rend(); it++)
             if((*it).count(*id) > 0)
@@ -660,6 +720,7 @@ void VarNode::printNode(int layer) {
 }
 
 Value * OperandNode::codeGen() {
+    cout << "Running codeGen for Operand." << endl;
     if(rhs == nullptr && single == nullptr) {
         Value * result = lhs->codeGen();
         if(op == nullptr)
@@ -830,6 +891,7 @@ void OperandNode::printNode(int layer) {
 }
 
 Value * SingleNode::codeGen() {
+    cout << "Running codeGen for Single." << endl;
     if(varNode != nullptr)
         return varNode->codeGen();
     else if(callNode != nullptr)
@@ -874,6 +936,7 @@ void SingleNode::printNode(int layer) {
 }
 
 Value * CallNode::codeGen() {
+    cout << "Running codeGen for Call." << endl;
     const char * p = id->data();
     Function * calleeF = TheModule->getFunction(StringRef(p));
     vector<Value *> ArgsV;
@@ -899,6 +962,7 @@ void CallNode::printNode(int layer) {
 }
 
 Value * IntNode::codeGen() {
+    cout << "Running codeGen for Int." << endl;
     // APInt(uint64_t *val, unsigned int bits)
     return ConstantInt::get(*TheContext, APInt(value, 32));
 }
@@ -909,6 +973,7 @@ void IntNode::printNode(int layer) {
 }
 
 Value * FloatNode::codeGen() {
+    cout << "Running codeGen for Float." << endl;
     return ConstantFP::get(*TheContext, APFloat(value));
 }
 
@@ -918,6 +983,7 @@ void FloatNode::printNode(int layer) {
 }
 
 Value * CharNode::codeGen() {
+    cout << "Running codeGen for Char." << endl;
     // APInt(uint64_t *val, unsigned int bits)
     return ConstantInt::get(*TheContext, APInt(value, 8));
 }
@@ -928,6 +994,7 @@ void CharNode::printNode(int layer) {
 }
 
 Value * BoolNode::codeGen() {
+    cout << "Running codeGen for Bool." << endl;
     return ConstantInt::getBool(*TheContext, value);
 }
 
@@ -937,11 +1004,20 @@ void BoolNode::printNode(int layer) {
 }
 
 int main() {
+    TheContext = std::make_unique<LLVMContext>();
+    TheModule = std::make_unique<Module>("Shit mountain", *TheContext);
+    Builder = std::make_unique<IRBuilder<> >(*TheContext);
+
     varTable.push_back(map<string, pair<Value *, vector<int> > > ());
     yyparse();
     cout << "Program" << endl;
     for(auto p : *root) {
         p->printNode(1);
+    }
+    int cnt = 0;
+    for(auto p : *root) {
+        p->codeGen();
+        cout << cnt++ << endl;
     }
     return 0;
 }

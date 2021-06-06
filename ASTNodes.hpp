@@ -83,7 +83,7 @@ public:
         vector<SingleNode*> *arrayConstList
     ):baseType(baseType), idList(idList), arrayPost(arrayPost), arrayConstList(arrayConstList) {};
 
-    Value * codeGen();
+    Value * codeGen(bool global);
     void printNode(int layer);
 };
 
