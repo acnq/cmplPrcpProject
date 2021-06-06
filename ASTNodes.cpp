@@ -9,9 +9,9 @@
 
 vector<DeclarationNode*> *root;
 
-static std::unique_ptr<LLVMContext> TheContext;
-static std::unique_ptr<Module> TheModule;
-static std::unique_ptr<IRBuilder<>> Builder;
+LLVMContext TheContext;
+Module TheModule("Module", TheContext);
+IRBuilder<> Builder(TheContext);
 
 // static vector<map<string, Value *> > varTable;
 static vector<map<string, pair<Value *, vector<int> > > > varTable;
@@ -19,18 +19,19 @@ static map<string, Function *> funcTable;
 
 static AllocaInst *CreateEntryBlockAlloca(Function *func, Type * type, const string name) {
     IRBuilder<> TmpB(&func->getEntryBlock(), func->getEntryBlock().begin());
-        TmpB.CreateAlloca(type, 0, name.c_str());
+    return TmpB.CreateAlloca(type, 0, name.c_str());
 }
 
 static int type2int(Type * t) {
-    if(t == Type::getInt1Ty(*TheContext))
+    if(t == Type::getInt1Ty(TheContext))
         return 0;
-    else if(t == Type::getInt8Ty(*TheContext))
+    else if(t == Type::getInt8Ty(TheContext))
         return 1;
-    else if(t == Type::getInt32Ty(*TheContext))
+    else if(t == Type::getInt32Ty(TheContext))
         return 2;
-    else if(t == Type::getFloatTy(*TheContext))
+    else if(t == Type::getFloatTy(TheContext))
         return 3;
+    return -1;
 }
 
 static bool typeNoSmaller(Type * t1, Type * t2) {
@@ -40,17 +41,17 @@ static bool typeNoSmaller(Type * t1, Type * t2) {
 }
 
 static Type * str2type(string str) {
-    Type * retType;
+    Type * retType = nullptr;
     if(str == "BOOL_TYPE")
-        retType = Type::getInt1Ty(*TheContext);
+        retType = Type::getInt1Ty(TheContext);
     else if(str == "CHAR_TYPE")
-        retType = Type::getInt8Ty(*TheContext);
+        retType = Type::getInt8Ty(TheContext);
     else if(str == "INT_TYPE")
-        retType = Type::getInt32Ty(*TheContext);
+        retType = Type::getInt32Ty(TheContext);
     else if(str == "FLOAT_TYPE")
-        retType = Type::getFloatTy(*TheContext);
+        retType = Type::getFloatTy(TheContext);
     else if(str == "VOID_TYPE")
-        retType = Type::getVoidTy(*TheContext);
+        retType = Type::getVoidTy(TheContext);
     return retType;
 }
 
@@ -88,7 +89,7 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
     cout << "This Type: " << type2int(thisType) << endl;
     Function * outerLayer;
     if(!global)
-         outerLayer = Builder->GetInsertBlock()->getParent();
+         outerLayer = Builder.GetInsertBlock()->getParent();
     if(arrayPost == nullptr && arrayConstList == nullptr) {
         for(auto node : *idList) {
             Value * variable = nullptr;
@@ -98,10 +99,10 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
             else {
                 cout << "in else: " << endl;
                 cout << "This Type: " << type2int(thisType) << endl;
-                cout << (thisType == Type::getInt32Ty(*TheContext)) << endl;
-                cout << (thisType == Type::getFloatTy(*TheContext)) << endl;
+                cout << (thisType == Type::getInt32Ty(TheContext)) << endl;
+                cout << (thisType == Type::getFloatTy(TheContext)) << endl;
                 variable = new GlobalVariable(
-                    *TheModule, thisType, false, GlobalValue::InternalLinkage, 
+                    TheModule, thisType, false, GlobalValue::InternalLinkage, 
                     ConstantAggregateZero::get(thisType), *(node->id)
                 );
                 cout << "Var type: " << type2int(variable->getType()) << endl;
@@ -115,11 +116,11 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
                 cout << "Node type: " << type2int(node->initExp->codeGen()->getType()) << endl;
                 cout << "Var type: " << type2int(variable->getType()) << endl;
                 // cout << node->initExp->codeGen()->getType()->getTypeID() << endl;
-                // Value * tmp = Builder->CreatePointerCast(node->initExp->codeGen(), variable->getType());
+                // Value * tmp = Builder.CreatePointerCast(node->initExp->codeGen(), variable->getType());
                 // Value * result = node->initExp->codeGen();
-                // Value * tmp = Builder->CreateLoad(variable);
-                // Builder->CreateStore(result, tmp);
-                Builder->CreateStore(ConstantInt::get(*TheContext, APInt(12, 32)), variable);
+                // Value * tmp = Builder.CreateLoad(variable);
+                // Builder.CreateStore(result, tmp);
+                Builder.CreateStore(ConstantInt::get(TheContext, APInt(12, 32)), variable);
             }
             cout << "after init" << endl;
         }
@@ -136,11 +137,11 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
         else {
             cout << "In else: " << endl;
             // variable = new GlobalVariable(
-            //     *TheModule, thisType, false, GlobalValue::InternalLinkage, 
+            //     TheModule, thisType, false, GlobalValue::InternalLinkage, 
             //     ConstantAggregateZero::get(thisType), *(idList->at(0)->id)
             // );
             variable = new GlobalVariable(
-                *TheModule, ArrayType::get(thisType, size), false, GlobalValue::InternalLinkage, 
+                TheModule, ArrayType::get(thisType, size), false, GlobalValue::InternalLinkage, 
                 ConstantAggregateZero::get(ArrayType::get(thisType, size)), *(idList->at(0)->id)
             );
         }
@@ -148,7 +149,7 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
         varTable.back()[*(idList->at(0)->id)] = pair<Value *, vector<int> >(variable, *arrayPost);
         if(arrayConstList) {
             for(int i = 0; i < arrayConstList->size(); i++)
-                Builder->CreateStore(arrayConstList->at(i)->codeGen(), Builder->CreateGEP(variable, ConstantInt::get(*TheContext, APInt(i, 32))));
+                Builder.CreateStore(arrayConstList->at(i)->codeGen(), Builder.CreateGEP(variable, ConstantInt::get(TheContext, APInt(i, 32))));
         }
     }
     return nullptr; ///////////////////////////////////////////////////////////////////////可能有问题
@@ -206,6 +207,7 @@ void IdListNode::printNode(int layer) {
 Value * FunDeclarationNode::codeGen() {
     cout << "Running codeGen for FunDeclaration." << endl;
     vector<Type *> argTypes;
+
     for(auto param : *params) {
         int size = 1;
         if(param->arrayPost) {
@@ -216,17 +218,17 @@ Value * FunDeclarationNode::codeGen() {
         else
             argTypes.push_back(str2type(*(param->baseType)));
     }
-    Type * thisType = (baseType == nullptr)? Type::getVoidTy(*TheContext) : str2type(*baseType);
+    Type * thisType = (baseType == nullptr)? Type::getVoidTy(TheContext) : str2type(*baseType);
     FunctionType * FT = FunctionType::get(thisType, argTypes, false);    ///////// To do:检查多维数组形状
 
-    Function * context = Builder->GetInsertBlock()->getParent();
-    BasicBlock * afterBlock = BasicBlock::Create(*TheContext, "outOfFunction", context);
+//    Function * context = Builder.GetInsertBlock()->getParent();
+    BasicBlock * afterBlock = BasicBlock::Create(TheContext, "outOfFunction");
     
-    Function * F = Function::Create(FT, Function::ExternalLinkage, *id, TheModule.get());
+    Function * F = Function::Create(FT, Function::ExternalLinkage, *id, &TheModule);
 
     varTable.push_back(map<string, pair<Value *, vector<int> > > ());
-    BasicBlock * currBlock = BasicBlock::Create(*TheContext, "intoFunction", F);
-    Builder->SetInsertPoint(currBlock);
+    BasicBlock * currBlock = BasicBlock::Create(TheContext, "intoFunction", F);
+    Builder.SetInsertPoint(currBlock);
 
     funcTable[*id] = F;
     unsigned Idx = 0;
@@ -302,8 +304,9 @@ Value * FunctionBodyNode::codeGen(BasicBlock * afterBlock) {
     if(statementList)
         for(auto node : * statementList)
             node->codeGen();
-    Builder->CreateBr(afterBlock);
-    Builder->SetInsertPoint(afterBlock);
+//    Builder.CreateBr(afterBlock);
+//    Builder.SetInsertPoint(afterBlock);
+    return nullptr;
 }
 
 void FunctionBodyNode::printNode(int layer) {
@@ -326,18 +329,18 @@ void FunctionBodyNode::printNode(int layer) {
 Value * CompoundStmtNode::codeGen() {
     cout << "Running codeGen for CompoundStmt." << endl;
     varTable.push_back(map<string, pair<Value *, vector<int> > > ());
-    Function * context = Builder->GetInsertBlock()->getParent();
-    BasicBlock * currBlock = BasicBlock::Create(*TheContext, "intoBlock", context);
-    BasicBlock * afterBlock = BasicBlock::Create(*TheContext, "outOfBlock", context);
-    Builder->SetInsertPoint(currBlock);
+    Function * context = Builder.GetInsertBlock()->getParent();
+    BasicBlock * currBlock = BasicBlock::Create(TheContext, "intoBlock", context);
+    BasicBlock * afterBlock = BasicBlock::Create(TheContext, "outOfBlock", context);
+    Builder.SetInsertPoint(currBlock);
     if(localDeclarations)
         for(auto node : * localDeclarations)
             node->codeGen();
     if(statementList)
         for(auto node : * statementList)
             node->codeGen();
-    Builder->CreateBr(afterBlock);
-    Builder->SetInsertPoint(afterBlock);
+    Builder.CreateBr(afterBlock);
+    Builder.SetInsertPoint(afterBlock);
 }
 
 void CompoundStmtNode::printNode(int layer) {
@@ -400,31 +403,31 @@ void StatementNode::printNode(int layer) {
 Value * SelectionStmtNode::codeGen() {
     cout << "Running codeGen for SelectionStmt." << endl;
     Value * cond = condition->codeGen();
-    Function *TheFunction = Builder->GetInsertBlock()->getParent();
-    BasicBlock *ifBlock = BasicBlock::Create(*TheContext, "if", TheFunction);
-    BasicBlock *elseBlock = BasicBlock::Create(*TheContext, "else");
-    BasicBlock *afterBlock = BasicBlock::Create(*TheContext, "after");
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    BasicBlock *ifBlock = BasicBlock::Create(TheContext, "if", TheFunction);
+    BasicBlock *elseBlock = BasicBlock::Create(TheContext, "else");
+    BasicBlock *afterBlock = BasicBlock::Create(TheContext, "after");
 
-    Builder->CreateCondBr(cond, ifBlock, elseBlock);
+    Builder.CreateCondBr(cond, ifBlock, elseBlock);
 
-    Builder->SetInsertPoint(ifBlock);
+    Builder.SetInsertPoint(ifBlock);
 
     Value *ifValue = ifPart->codeGen();
 
-    Builder->CreateBr(afterBlock);
-    afterBlock = Builder->GetInsertBlock();
+    Builder.CreateBr(afterBlock);
+    afterBlock = Builder.GetInsertBlock();
 
     TheFunction->getBasicBlockList().push_back(elseBlock);
-    Builder->SetInsertPoint(elseBlock);
+    Builder.SetInsertPoint(elseBlock);
 
     Value *elseValue = elsePart->codeGen();
 
-    Builder->CreateBr(afterBlock);
-    elseBlock = Builder->GetInsertBlock();
+    Builder.CreateBr(afterBlock);
+    elseBlock = Builder.GetInsertBlock();
 
     TheFunction->getBasicBlockList().push_back(afterBlock);
-    Builder->SetInsertPoint(afterBlock);
-    PHINode *PN = Builder->CreatePHI(Type::getDoubleTy(*TheContext), 2, "iftmp");
+    Builder.SetInsertPoint(afterBlock);
+    PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(TheContext), 2, "iftmp");
 
     PN->addIncoming(ifValue, ifBlock);
     PN->addIncoming(elseValue, elseBlock);
@@ -471,20 +474,20 @@ void IterationStmtNode::printNode(int layer) {
 
 Value * WhileStmtNode::codeGen() {
     cout << "Running codeGen for WhileStmt." << endl;
-    Function *TheFunction = Builder->GetInsertBlock()->getParent();
-    BasicBlock *mainBlock = BasicBlock::Create(*TheContext, "whileLoop", TheFunction);
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    BasicBlock *mainBlock = BasicBlock::Create(TheContext, "whileLoop", TheFunction);
 
-    Builder->CreateBr(mainBlock);
-    Builder->SetInsertPoint(mainBlock);
+    Builder.CreateBr(mainBlock);
+    Builder.SetInsertPoint(mainBlock);
 
     Value * cond = condition->codeGen();
-    BasicBlock *afterBlock = BasicBlock::Create(*TheContext, "afterWhile", TheFunction);
-    Builder->CreateCondBr(cond, mainBlock, afterBlock);
+    BasicBlock *afterBlock = BasicBlock::Create(TheContext, "afterWhile", TheFunction);
+    Builder.CreateCondBr(cond, mainBlock, afterBlock);
 
     statement->codeGen();
 
-    Builder->CreateBr(mainBlock);
-    Builder->SetInsertPoint(afterBlock);
+    Builder.CreateBr(mainBlock);
+    Builder.SetInsertPoint(afterBlock);
 
     return nullptr;
 }
@@ -505,21 +508,21 @@ void WhileStmtNode::printNode(int layer) {
 Value * ForStmtNode::codeGen() {
     cout << "Running codeGen for ForStmt." << endl;
     first->codeGen();
-    Function *TheFunction = Builder->GetInsertBlock()->getParent();
-    BasicBlock *mainBlock = BasicBlock::Create(*TheContext, "forLoop", TheFunction);
+    Function *TheFunction = Builder.GetInsertBlock()->getParent();
+    BasicBlock *mainBlock = BasicBlock::Create(TheContext, "forLoop", TheFunction);
 
-    Builder->CreateBr(mainBlock);
-    Builder->SetInsertPoint(mainBlock);
+    Builder.CreateBr(mainBlock);
+    Builder.SetInsertPoint(mainBlock);
 
     Value * cond = second->codeGen();
-    BasicBlock *afterBlock = BasicBlock::Create(*TheContext, "afterFor", TheFunction);
-    Builder->CreateCondBr(cond, mainBlock, afterBlock);
+    BasicBlock *afterBlock = BasicBlock::Create(TheContext, "afterFor", TheFunction);
+    Builder.CreateCondBr(cond, mainBlock, afterBlock);
 
     statement->codeGen();
     third->codeGen();
 
-    Builder->CreateBr(mainBlock);
-    Builder->SetInsertPoint(afterBlock);
+    Builder.CreateBr(mainBlock);
+    Builder.SetInsertPoint(afterBlock);
 
     return nullptr;
 }
@@ -548,7 +551,7 @@ void ForStmtNode::printNode(int layer) {
 Value * ReturnStmtNode::codeGen() {
     cout << "Running codeGen for ReturnStmt." << endl;
     Value * ret = returnExp->codeGen();
-    return Builder->CreateRet(ret);
+    return Builder.CreateRet(ret);
 }
 
 void ReturnStmtNode::printNode(int layer) {
@@ -565,82 +568,67 @@ Value * ExpressionNode::codeGen() {
     if(operand)
         return operand->codeGen();
     else {
-        Value * result = expression->codeGen();
-        Value * variable = var->codeGen();
-        if(!typeNoSmaller(variable->getType(), result->getType())) {
+        Value *result = expression->codeGen();
+        Value *variable = var->codeGen();
+        if (!typeNoSmaller(variable->getType(), result->getType())) {
             // Error!
-        }
-        else {
-            if(variable->getType() != result->getType())
-                result = Builder->CreateIntCast(result, variable->getType(), true);
-            if(*op == "ASSIGN") {
-                Builder->CreateStore(result, variable);
-            }
-            else if(*op == "BANDASSIGN") {
-                Value * tmp = Builder->CreateAnd(variable, result);
-                Builder->CreateStore(tmp, variable);
-            }
-            else if(*op == "BORASSIGN") {
-                Value * tmp = Builder->CreateOr(variable, result);
-                Builder->CreateStore(tmp, variable);
-            }
-            else if(*op == "BXORASSIGN") {
-                Value * tmp = Builder->CreateXor(variable, result);
-                Builder->CreateStore(tmp, variable);
-            }
-            else if(*op == "SLASSIGN") {
-                Value * tmp = Builder->CreateShl(variable, result);
-                Builder->CreateStore(tmp, variable);
-            }
-            else if(*op == "SLASSIGN") {
-                Value * tmp = Builder->CreateAShr(variable, result);
-                Builder->CreateStore(tmp, variable);
-            }
-            else if(result->getType() != Type::getFloatTy(*TheContext)) {
-                if(*op == "PLUSASSIGN") {
-                    Value * tmp = Builder->CreateAdd(variable, result);
-                    Builder->CreateStore(tmp, variable);
+        } else {
+            if (variable->getType() != result->getType())
+                result = Builder.CreateIntCast(result, variable->getType(), true);
+            if (*op == "ASSIGN") {
+                Builder.CreateStore(result, variable);
+            } else if (*op == "BANDASSIGN") {
+                Value *tmp = Builder.CreateAnd(variable, result);
+                Builder.CreateStore(tmp, variable);
+            } else if (*op == "BORASSIGN") {
+                Value *tmp = Builder.CreateOr(variable, result);
+                Builder.CreateStore(tmp, variable);
+            } else if (*op == "BXORASSIGN") {
+                Value *tmp = Builder.CreateXor(variable, result);
+                Builder.CreateStore(tmp, variable);
+            } else if (*op == "SLASSIGN") {
+                Value *tmp = Builder.CreateShl(variable, result);
+                Builder.CreateStore(tmp, variable);
+            } else if (*op == "SLASSIGN") {
+                Value *tmp = Builder.CreateAShr(variable, result);
+                Builder.CreateStore(tmp, variable);
+            } else if (result->getType() != Type::getFloatTy(TheContext)) {
+                if (*op == "PLUSASSIGN") {
+                    Value *tmp = Builder.CreateAdd(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "MINUSASSIGN") {
+                    Value *tmp = Builder.CreateSub(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "MULTASSIGN") {
+                    Value *tmp = Builder.CreateMul(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "DIVASSIGN") {
+                    Value *tmp = Builder.CreateSDiv(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "MODASSIGN") {
+                    Value *tmp = Builder.CreateSRem(variable, result);
+                    Builder.CreateStore(tmp, variable);
                 }
-                else if(*op == "MINUSASSIGN") {
-                    Value * tmp = Builder->CreateSub(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-                else if(*op == "MULTASSIGN") {
-                    Value * tmp = Builder->CreateMul(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-                else if(*op == "DIVASSIGN") {
-                    Value * tmp = Builder->CreateSDiv(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-                else if(*op == "MODASSIGN") {
-                    Value * tmp = Builder->CreateSRem(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-            }
-            else {
-                if(*op == "PLUSASSIGN") {
-                    Value * tmp = Builder->CreateFAdd(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-                else if(*op == "MINUSASSIGN") {
-                    Value * tmp = Builder->CreateFSub(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-                else if(*op == "MULTASSIGN") {
-                    Value * tmp = Builder->CreateFMul(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-                else if(*op == "DIVASSIGN") {
-                    Value * tmp = Builder->CreateFDiv(variable, result);
-                    Builder->CreateStore(tmp, variable);
-                }
-                else if(*op == "MODASSIGN") {
-                    Value * tmp = Builder->CreateFRem(variable, result);
-                    Builder->CreateStore(tmp, variable);
+            } else {
+                if (*op == "PLUSASSIGN") {
+                    Value *tmp = Builder.CreateFAdd(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "MINUSASSIGN") {
+                    Value *tmp = Builder.CreateFSub(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "MULTASSIGN") {
+                    Value *tmp = Builder.CreateFMul(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "DIVASSIGN") {
+                    Value *tmp = Builder.CreateFDiv(variable, result);
+                    Builder.CreateStore(tmp, variable);
+                } else if (*op == "MODASSIGN") {
+                    Value *tmp = Builder.CreateFRem(variable, result);
+                    Builder.CreateStore(tmp, variable);
                 }
             }
         }
+        return variable;
     }
 }
 
@@ -696,7 +684,7 @@ Value * VarNode::codeGen() {
         int ind = 0;
         for(int i = size.size() - 1; i >= 0; i--)
             ind = ind * products[i+1] + products[i];
-        return Builder->CreateGEP(array, ConstantInt::get(*TheContext, APInt(ind, 32)));
+        return Builder.CreateGEP(array, ConstantInt::get(TheContext, APInt(ind, 32)));
     }
 }
 
@@ -726,34 +714,34 @@ Value * OperandNode::codeGen() {
         if(op == nullptr)
             return result;
         else if(*op == "MINUS")
-            if(result->getType() == Type::getFloatTy(*TheContext))
-                return Builder->CreateFNeg(result);
+            if(result->getType() == Type::getFloatTy(TheContext))
+                return Builder.CreateFNeg(result);
             else
-                return Builder->CreateNeg(result);
+                return Builder.CreateNeg(result);
         else if(*op == "BNOT")
-            return Builder->CreateNot(result);
+            return Builder.CreateNot(result);
         else if(*op == "LNOT")
-            if(result->getType() == Type::getFloatTy(*TheContext))
-                return Builder->CreateFCmpONE(result, ConstantFP::get(*TheContext, APFloat(0.0)));
+            if(result->getType() == Type::getFloatTy(TheContext))
+                return Builder.CreateFCmpONE(result, ConstantFP::get(TheContext, APFloat(0.0)));
             else
-                return Builder->CreateICmpNE(result, ConstantInt::getBool(*TheContext, false));
+                return Builder.CreateICmpNE(result, ConstantInt::getBool(TheContext, false));
     }
     else if(single != nullptr) {
         Value * result = single->codeGen();
         if(op == nullptr)
             return result;
         else if(*op == "MINUS")
-            if(result->getType() == Type::getFloatTy(*TheContext))
-                return Builder->CreateFNeg(result);
+            if(result->getType() == Type::getFloatTy(TheContext))
+                return Builder.CreateFNeg(result);
             else
-                return Builder->CreateNeg(result);
+                return Builder.CreateNeg(result);
         else if(*op == "BNOT")
-            return Builder->CreateNot(result);
+            return Builder.CreateNot(result);
         else if(*op == "LNOT")
-            if(result->getType() == Type::getFloatTy(*TheContext))
-                return Builder->CreateFCmpONE(result, ConstantFP::get(*TheContext, APFloat(0.0)));
+            if(result->getType() == Type::getFloatTy(TheContext))
+                return Builder.CreateFCmpONE(result, ConstantFP::get(TheContext, APFloat(0.0)));
             else
-                return Builder->CreateICmpNE(result, ConstantInt::getBool(*TheContext, false));
+                return Builder.CreateICmpNE(result, ConstantInt::getBool(TheContext, false));
         
     }
     else {
@@ -761,108 +749,108 @@ Value * OperandNode::codeGen() {
         Value * right = lhs->codeGen();
         if(left->getType() != right->getType()) {
             if(type2int(left->getType()) > type2int(right->getType()))
-                right = Builder->CreateIntCast(right, left->getType(), true);
+                right = Builder.CreateIntCast(right, left->getType(), true);
             else if(type2int(right->getType()) > type2int(left->getType()))
-                left = Builder->CreateIntCast(left, right->getType(), true);
+                left = Builder.CreateIntCast(left, right->getType(), true);
         }
         if(*op == "BOR") {
-            return Builder->CreateOr(left, right);
+            return Builder.CreateOr(left, right);
         }
         else if(*op == "BAND") {
-            return Builder->CreateAnd(left, right);
+            return Builder.CreateAnd(left, right);
         }
         else if(*op == "SL") {
-            return Builder->CreateShl(left, right);
+            return Builder.CreateShl(left, right);
         }
         else if(*op == "SR") {
-            return Builder->CreateAShr(left, right);
+            return Builder.CreateAShr(left, right);
         }
-        else if(left->getType() != Type::getFloatTy(*TheContext)) {
+        else if(left->getType() != Type::getFloatTy(TheContext)) {
             if(*op == "LOR") {
-                Value * tmp = Builder->CreateOr(left, right);
-                return Builder->CreateICmpNE(tmp, ConstantInt::getBool(*TheContext, false));
+                Value * tmp = Builder.CreateOr(left, right);
+                return Builder.CreateICmpNE(tmp, ConstantInt::getBool(TheContext, false));
             }
             else if(*op == "LAND") {
-                Value * leftTrue = Builder->CreateICmpNE(left, ConstantInt::getBool(*TheContext, false));
-                Value * rightTrue = Builder->CreateICmpNE(right, ConstantInt::getBool(*TheContext, false));
-                return Builder->CreateAnd(leftTrue, rightTrue);
+                Value * leftTrue = Builder.CreateICmpNE(left, ConstantInt::getBool(TheContext, false));
+                Value * rightTrue = Builder.CreateICmpNE(right, ConstantInt::getBool(TheContext, false));
+                return Builder.CreateAnd(leftTrue, rightTrue);
             }
             else if(*op == "EQ") {
-                return Builder->CreateICmpEQ(left, right);
+                return Builder.CreateICmpEQ(left, right);
             }
             else if(*op == "NEQ") {
-                return Builder->CreateICmpNE(left, right);
+                return Builder.CreateICmpNE(left, right);
             }
             else if(*op == "LT") {
-                return Builder->CreateICmpSLT(left, right);
+                return Builder.CreateICmpSLT(left, right);
             }
             else if(*op == "GT") {
-                return Builder->CreateICmpSGT(left, right);
+                return Builder.CreateICmpSGT(left, right);
             }
             else if(*op == "LTE") {
-                return Builder->CreateICmpSLE(left, right);
+                return Builder.CreateICmpSLE(left, right);
             }
             else if(*op == "GTE") {
-                return Builder->CreateICmpSGE(left, right);
+                return Builder.CreateICmpSGE(left, right);
             }
             else if(*op == "PLUS") {
-                return Builder->CreateAdd(left, right);
+                return Builder.CreateAdd(left, right);
             }
             else if(*op == "MINUS") {
-                return Builder->CreateSub(left, right);
+                return Builder.CreateSub(left, right);
             }
             else if(*op == "MULT") {
-                return Builder->CreateMul(left, right);
+                return Builder.CreateMul(left, right);
             }
             else if(*op == "DIV") {
-                return Builder->CreateSDiv(left, right);
+                return Builder.CreateSDiv(left, right);
             }
             else if(*op == "MOD") {
-                return Builder->CreateSRem(left, right);
+                return Builder.CreateSRem(left, right);
             }
         }
         else {
             if(*op == "LOR") {
-                Value * tmp = Builder->CreateOr(left, right);
-                return Builder->CreateFCmpONE(tmp, ConstantInt::getBool(*TheContext, false));
+                Value * tmp = Builder.CreateOr(left, right);
+                return Builder.CreateFCmpONE(tmp, ConstantInt::getBool(TheContext, false));
             }
             else if(*op == "LAND") {
-                Value * leftTrue = Builder->CreateFCmpONE(left, ConstantInt::getBool(*TheContext, false));
-                Value * rightTrue = Builder->CreateFCmpONE(right, ConstantInt::getBool(*TheContext, false));
-                return Builder->CreateAnd(leftTrue, rightTrue);
+                Value * leftTrue = Builder.CreateFCmpONE(left, ConstantInt::getBool(TheContext, false));
+                Value * rightTrue = Builder.CreateFCmpONE(right, ConstantInt::getBool(TheContext, false));
+                return Builder.CreateAnd(leftTrue, rightTrue);
             }
             else if(*op == "EQ") {
-                return Builder->CreateFCmpOEQ(left, right);
+                return Builder.CreateFCmpOEQ(left, right);
             }
             else if(*op == "NEQ") {
-                return Builder->CreateFCmpONE(left, right);
+                return Builder.CreateFCmpONE(left, right);
             }
             else if(*op == "LT") {
-                return Builder->CreateFCmpOLT(left, right);
+                return Builder.CreateFCmpOLT(left, right);
             }
             else if(*op == "GT") {
-                return Builder->CreateFCmpOGT(left, right);
+                return Builder.CreateFCmpOGT(left, right);
             }
             else if(*op == "LTE") {
-                return Builder->CreateFCmpOLE(left, right);
+                return Builder.CreateFCmpOLE(left, right);
             }
             else if(*op == "GTE") {
-                return Builder->CreateFCmpOGE(left, right);
+                return Builder.CreateFCmpOGE(left, right);
             }
             else if(*op == "PLUS") {
-                return Builder->CreateFAdd(left, right);
+                return Builder.CreateFAdd(left, right);
             }
             else if(*op == "MINUS") {
-                return Builder->CreateFSub(left, right);
+                return Builder.CreateFSub(left, right);
             }
             else if(*op == "MULT") {
-                return Builder->CreateFMul(left, right);
+                return Builder.CreateFMul(left, right);
             }
             else if(*op == "DIV") {
-                return Builder->CreateFDiv(left, right);
+                return Builder.CreateFDiv(left, right);
             }
             else if(*op == "MOD") {
-                return Builder->CreateFRem(left, right);
+                return Builder.CreateFRem(left, right);
             }
         }
     }
@@ -938,11 +926,11 @@ void SingleNode::printNode(int layer) {
 Value * CallNode::codeGen() {
     cout << "Running codeGen for Call." << endl;
     const char * p = id->data();
-    Function * calleeF = TheModule->getFunction(StringRef(p));
+    Function * calleeF = TheModule.getFunction(StringRef(p));
     vector<Value *> ArgsV;
     for (unsigned i = 0, e = args->size(); i != e; ++i)
         ArgsV.push_back(args->at(i)->codeGen());
-    return Builder->CreateCall(calleeF, ArgsV, "calltmp");
+    return Builder.CreateCall(calleeF, ArgsV, "calltmp");
 }
 
 void CallNode::printNode(int layer) {
@@ -964,7 +952,7 @@ void CallNode::printNode(int layer) {
 Value * IntNode::codeGen() {
     cout << "Running codeGen for Int." << endl;
     // APInt(uint64_t *val, unsigned int bits)
-    return ConstantInt::get(*TheContext, APInt(value, 32));
+    return ConstantInt::get(TheContext, APInt(value, 32));
 }
 
 void IntNode::printNode(int layer) {
@@ -974,7 +962,7 @@ void IntNode::printNode(int layer) {
 
 Value * FloatNode::codeGen() {
     cout << "Running codeGen for Float." << endl;
-    return ConstantFP::get(*TheContext, APFloat(value));
+    return ConstantFP::get(TheContext, APFloat(value));
 }
 
 void FloatNode::printNode(int layer) {
@@ -985,7 +973,7 @@ void FloatNode::printNode(int layer) {
 Value * CharNode::codeGen() {
     cout << "Running codeGen for Char." << endl;
     // APInt(uint64_t *val, unsigned int bits)
-    return ConstantInt::get(*TheContext, APInt(value, 8));
+    return ConstantInt::get(TheContext, APInt(value, 8));
 }
 
 void CharNode::printNode(int layer) {
@@ -995,7 +983,7 @@ void CharNode::printNode(int layer) {
 
 Value * BoolNode::codeGen() {
     cout << "Running codeGen for Bool." << endl;
-    return ConstantInt::getBool(*TheContext, value);
+    return ConstantInt::getBool(TheContext, value);
 }
 
 void BoolNode::printNode(int layer) {
@@ -1004,9 +992,6 @@ void BoolNode::printNode(int layer) {
 }
 
 int main() {
-    TheContext = std::make_unique<LLVMContext>();
-    TheModule = std::make_unique<Module>("Shit mountain", *TheContext);
-    Builder = std::make_unique<IRBuilder<> >(*TheContext);
 
     varTable.push_back(map<string, pair<Value *, vector<int> > > ());
     yyparse();
@@ -1019,5 +1004,7 @@ int main() {
         p->codeGen();
         cout << cnt++ << endl;
     }
+    TheModule.print(errs(), nullptr);
+
     return 0;
 }
