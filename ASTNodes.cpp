@@ -101,13 +101,27 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
                 cout << "This Type: " << type2int(thisType) << endl;
                 cout << (thisType == Type::getInt32Ty(TheContext)) << endl;
                 cout << (thisType == Type::getFloatTy(TheContext)) << endl;
-                variable = new GlobalVariable(
-                    TheModule, thisType, false, GlobalValue::InternalLinkage, 
-                    ConstantAggregateZero::get(thisType), *(node->id)
-                );
-                cout << "Var type: " << type2int(variable->getType()) << endl;
-                cout << variable->getType()->getTypeID() << endl;
-                cout << ((PointerType *)(variable->getType()))->getElementType()->getTypeID() << endl;
+                if(node->initExp == nullptr) {
+                    variable = new GlobalVariable(
+                            TheModule, thisType, false, GlobalValue::InternalLinkage,
+                            ConstantAggregateZero::get(thisType), *(node->id)
+                    );
+                }
+                else {
+                    Value * result = node->initExp->codeGen();
+                    if(thisType != Type::getFloatTy(TheContext)) {
+                        if(result->getType() != Type::getFloatTy(TheContext))
+                            result = Builder.CreateIntCast(result, Type::getFloatTy(TheContext), true);
+                    }
+                    else {
+                        if(result->getType() == Type::getFloatTy(TheContext))
+                            result = Builder.CreateFPCast(result, Type::getInt32Ty(TheContext));
+                    }
+                    variable = new GlobalVariable(
+                            TheModule, thisType, false, GlobalValue::InternalLinkage,
+                            (Constant * )result, *(node->id)  ///////////////////////////////////// 可能有问题
+                    );
+                }
             }
             cout << "after else" << endl;
             varTable.back()[*(node->id)] = pair<Value *, vector<int> >(variable, vector<int>());
@@ -135,22 +149,35 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
         if(!global)
             variable = CreateEntryBlockAlloca(outerLayer, ArrayType::get(thisType, size), *(idList->at(0)->id));
         else {
-            cout << "In else: " << endl;
-            // variable = new GlobalVariable(
-            //     TheModule, thisType, false, GlobalValue::InternalLinkage, 
-            //     ConstantAggregateZero::get(thisType), *(idList->at(0)->id)
-            // );
-            variable = new GlobalVariable(
-                TheModule, ArrayType::get(thisType, size), false, GlobalValue::InternalLinkage, 
-                ConstantAggregateZero::get(ArrayType::get(thisType, size)), *(idList->at(0)->id)
-            );
+            if(arrayConstList == nullptr) {
+                variable = new GlobalVariable(
+                        TheModule, ArrayType::get(thisType, size), false, GlobalValue::InternalLinkage,
+                        ConstantAggregateZero::get(ArrayType::get(thisType, size)), *(idList->at(0)->id)
+                );
+            }
+            else {
+                vector<Constant *> initValues;
+                for(auto node : *arrayConstList) {
+                    Value * result = node->codeGen();
+                    if(thisType != Type::getFloatTy(TheContext)) {
+                        if(result->getType() != Type::getFloatTy(TheContext))
+                            result = Builder.CreateIntCast(result, Type::getFloatTy(TheContext), true);
+                    }
+                    else {
+                        if(result->getType() == Type::getFloatTy(TheContext))
+                            result = Builder.CreateFPCast(result, Type::getInt32Ty(TheContext));
+                    }
+                    initValues.push_back((Constant*)result);     ////////////////// 可能有问题
+                }
+                ArrayRef<Constant *> valRefs(initValues);
+                variable = new GlobalVariable(
+                        TheModule, ArrayType::get(thisType, size), false, GlobalValue::InternalLinkage,
+                        ConstantArray::get(ArrayType::get(thisType, size), valRefs), *(idList->at(0)->id)
+                );
+            }
         }
         cout << "Size: " << size << endl;
         varTable.back()[*(idList->at(0)->id)] = pair<Value *, vector<int> >(variable, *arrayPost);
-        if(arrayConstList) {
-            for(int i = 0; i < arrayConstList->size(); i++)
-                Builder.CreateStore(arrayConstList->at(i)->codeGen(), Builder.CreateGEP(variable, ConstantInt::get(TheContext, APInt(32, i))));
-        }
     }
     return nullptr; ///////////////////////////////////////////////////////////////////////可能有问题
 }
@@ -332,7 +359,7 @@ Value * CompoundStmtNode::codeGen() {
     varTable.push_back(map<string, pair<Value *, vector<int> > > ());
     Function * context = Builder.GetInsertBlock()->getParent();
     BasicBlock * currBlock = BasicBlock::Create(TheContext, "intoBlock", context);
-    BasicBlock * afterBlock = BasicBlock::Create(TheContext, "outOfBlock", context);
+//    BasicBlock * afterBlock = BasicBlock::Create(TheContext, "outOfBlock", context);
     Builder.SetInsertPoint(currBlock);
     if(localDeclarations)
         for(auto node : * localDeclarations)
@@ -520,13 +547,17 @@ Value * ForStmtNode::codeGen() {
     Builder.SetInsertPoint(mainBlock);
 
     Value * cond = second->codeGen();
-    BasicBlock *afterBlock = BasicBlock::Create(TheContext, "afterFor", TheFunction);
-    Builder.CreateCondBr(cond, mainBlock, afterBlock);
+    BasicBlock *loopBlock = BasicBlock::Create(TheContext, "actualLoop");
+    BasicBlock *afterBlock = BasicBlock::Create(TheContext, "afterFor");
+    Builder.CreateCondBr(cond, loopBlock, afterBlock);
 
+    TheFunction->getBasicBlockList().push_back(loopBlock);
+    Builder.SetInsertPoint(loopBlock);
     statement->codeGen();
     third->codeGen();
-
     Builder.CreateBr(mainBlock);
+
+    TheFunction->getBasicBlockList().push_back(afterBlock);
     Builder.SetInsertPoint(afterBlock);
 
     return nullptr;
