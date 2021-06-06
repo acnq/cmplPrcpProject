@@ -1,8 +1,3 @@
-#include <iostream>
-#include <vector>
-#include <map>
-#include <utility>
-#include <string>
 #include "ASTNodes.hpp"
 #include "parser.tab.h"
 
@@ -444,31 +439,22 @@ Value * SelectionStmtNode::codeGen() {
     BasicBlock *afterBlock = BasicBlock::Create(TheContext, "after");
 
     Builder.CreateCondBr(cond, ifBlock, elseBlock);
-
     Builder.SetInsertPoint(ifBlock);
 
-    Value *ifValue = ifPart->codeGen();
-
+    if(ifPart)
+        ifPart->codeGen();
     Builder.CreateBr(afterBlock);
-    afterBlock = Builder.GetInsertBlock();
 
     TheFunction->getBasicBlockList().push_back(elseBlock);
     Builder.SetInsertPoint(elseBlock);
 
-    Value *elseValue;
     if(elsePart)
-        elseValue = elsePart->codeGen();
-
+        elsePart->codeGen();
     Builder.CreateBr(afterBlock);
-    elseBlock = Builder.GetInsertBlock();
 
     TheFunction->getBasicBlockList().push_back(afterBlock);
     Builder.SetInsertPoint(afterBlock);
-//    PHINode *PN = Builder.CreatePHI(Type::getDoubleTy(TheContext), 2, "iftmp");
 
-//    PN->addIncoming(ifValue, ifBlock);
-//    PN->addIncoming(elseValue, elseBlock);
-//    return PN;
     return nullptr;
 }
 
@@ -1055,7 +1041,10 @@ int main() {
         p->codeGen();
         cout << cnt++ << endl;
     }
-    TheModule.print(errs(), nullptr);
 
+    error_code error;
+    raw_fd_ostream out("test.ir", error, sys::fs::OpenFlags::OF_None);
+    TheModule.print(out, nullptr);
+    out.close();
     return 0;
 }
