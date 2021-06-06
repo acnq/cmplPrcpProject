@@ -84,9 +84,7 @@ void DeclarationNode::printNode(int layer) {
 }
 
 Value * VarDeclarationNode::codeGen(bool global=false) {
-    cout << "Running codeGen for VarDeclaration." << endl;
     Type * thisType = str2type(*baseType);
-    cout << "This Type: " << type2int(thisType) << endl;
     Function * outerLayer;
     if(!global)
          outerLayer = Builder.GetInsertBlock()->getParent();
@@ -94,13 +92,13 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
         for(auto node : *idList) {
             Value * variable = nullptr;
 
-            if(!global)
+            if(!global) {
                 variable = CreateEntryBlockAlloca(outerLayer, thisType, *(node->id));
+                if (node->initExp) {
+                    Builder.CreateStore(node->initExp->codeGen(), variable);
+                }
+            }
             else {
-                cout << "in else: " << endl;
-                cout << "This Type: " << type2int(thisType) << endl;
-                cout << (thisType == Type::getInt32Ty(TheContext)) << endl;
-                cout << (thisType == Type::getFloatTy(TheContext)) << endl;
                 if(node->initExp == nullptr) {
                     variable = new GlobalVariable(
                             TheModule, thisType, false, GlobalValue::InternalLinkage,
@@ -110,12 +108,12 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
                 else {
                     Value * result = node->initExp->codeGen();
                     if(thisType != Type::getFloatTy(TheContext)) {
-                        if(result->getType() != Type::getFloatTy(TheContext))
-                            result = Builder.CreateIntCast(result, Type::getFloatTy(TheContext), true);
-                    }
-                    else {
                         if(result->getType() == Type::getFloatTy(TheContext))
                             result = Builder.CreateFPCast(result, Type::getInt32Ty(TheContext));
+                    }
+                    else {
+                        if(result->getType() != Type::getFloatTy(TheContext))
+                            result = Builder.CreateIntCast(result, Type::getFloatTy(TheContext), true);
                     }
                     variable = new GlobalVariable(
                             TheModule, thisType, false, GlobalValue::InternalLinkage,
@@ -123,31 +121,36 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
                     );
                 }
             }
-            cout << "after else" << endl;
             varTable.back()[*(node->id)] = pair<Value *, vector<int> >(variable, vector<int>());
-            if(node->initExp) {
-                cout << "in init" << endl;
-                cout << "Node type: " << type2int(node->initExp->codeGen()->getType()) << endl;
-                cout << "Var type: " << type2int(variable->getType()) << endl;
-                // cout << node->initExp->codeGen()->getType()->getTypeID() << endl;
-                // Value * tmp = Builder.CreatePointerCast(node->initExp->codeGen(), variable->getType());
-                // Value * result = node->initExp->codeGen();
-                // Value * tmp = Builder.CreateLoad(variable);
-                // Builder.CreateStore(result, tmp);
-                Builder.CreateStore(ConstantInt::get(TheContext, APInt(32, 1)), variable);
-            }
-            cout << "after init" << endl;
         }
     }
     else {
-        cout << 2 << endl;
         int size = 1;
         for(auto i : *arrayPost)
             size *= i;
         cout << "Size: " << size << endl;
         Value * variable = nullptr;
-        if(!global)
+        if(!global) {
             variable = CreateEntryBlockAlloca(outerLayer, ArrayType::get(thisType, size), *(idList->at(0)->id));
+            if(arrayConstList) {
+                vector<Value *> initValues;
+                for(auto node : *arrayConstList) {
+                    Value * result = node->codeGen();
+                    if(thisType != Type::getFloatTy(TheContext)) {
+                        if(result->getType() == Type::getFloatTy(TheContext))
+                            result = Builder.CreateFPCast(result, Type::getInt32Ty(TheContext));
+                    }
+                    else {
+                        if(result->getType() != Type::getFloatTy(TheContext))
+                            result = Builder.CreateIntCast(result, Type::getFloatTy(TheContext), true);
+                    }
+                    initValues.push_back(result);
+                }
+                for(int i = 0; i < initValues.size(); i++) {
+                    Builder.CreateStore(initValues[i], Builder.CreateGEP(variable, ConstantInt::get(TheContext, APInt(32, i))));
+                }
+            }
+        }
         else {
             if(arrayConstList == nullptr) {
                 variable = new GlobalVariable(
@@ -160,12 +163,12 @@ Value * VarDeclarationNode::codeGen(bool global=false) {
                 for(auto node : *arrayConstList) {
                     Value * result = node->codeGen();
                     if(thisType != Type::getFloatTy(TheContext)) {
-                        if(result->getType() != Type::getFloatTy(TheContext))
-                            result = Builder.CreateIntCast(result, Type::getFloatTy(TheContext), true);
-                    }
-                    else {
                         if(result->getType() == Type::getFloatTy(TheContext))
                             result = Builder.CreateFPCast(result, Type::getInt32Ty(TheContext));
+                    }
+                    else {
+                        if(result->getType() != Type::getFloatTy(TheContext))
+                            result = Builder.CreateIntCast(result, Type::getFloatTy(TheContext), true);
                     }
                     initValues.push_back((Constant*)result);     ////////////////// 可能有问题
                 }
@@ -259,10 +262,13 @@ Value * FunDeclarationNode::codeGen() {
     Builder.SetInsertPoint(currBlock);
 
     funcTable[*id] = F;
+
     unsigned Idx = 0;
     for (auto &Arg : F->args()) {
+        AllocaInst *Alloca = CreateEntryBlockAlloca(F, Arg.getType(), Arg.getName().str());
+        Builder.CreateStore(&Arg, Alloca);
         Arg.setName(*(params->at(Idx++)->id));
-        varTable.back()[string(Arg.getName())] = pair<Value *, vector<int> >(&Arg, vector<int>());
+        varTable.back()[string(Arg.getName())] = pair<Value *, vector<int> >(Alloca, vector<int>());
     }
     if(!isExtern)
         return functionBody->codeGen(afterBlock);
@@ -506,6 +512,7 @@ void IterationStmtNode::printNode(int layer) {
 
 Value * WhileStmtNode::codeGen() {
     cout << "Running codeGen for WhileStmt." << endl;
+
     Function *TheFunction = Builder.GetInsertBlock()->getParent();
     BasicBlock *mainBlock = BasicBlock::Create(TheContext, "whileLoop", TheFunction);
 
@@ -513,12 +520,16 @@ Value * WhileStmtNode::codeGen() {
     Builder.SetInsertPoint(mainBlock);
 
     Value * cond = condition->codeGen();
-    BasicBlock *afterBlock = BasicBlock::Create(TheContext, "afterWhile", TheFunction);
-    Builder.CreateCondBr(cond, mainBlock, afterBlock);
+    BasicBlock *loopBlock = BasicBlock::Create(TheContext, "actualLoop");
+    BasicBlock *afterBlock = BasicBlock::Create(TheContext, "afterFor");
+    Builder.CreateCondBr(cond, loopBlock, afterBlock);
 
+    TheFunction->getBasicBlockList().push_back(loopBlock);
+    Builder.SetInsertPoint(loopBlock);
     statement->codeGen();
-
     Builder.CreateBr(mainBlock);
+
+    TheFunction->getBasicBlockList().push_back(afterBlock);
     Builder.SetInsertPoint(afterBlock);
 
     return nullptr;
@@ -604,67 +615,68 @@ Value * ExpressionNode::codeGen() {
     if(operand)
         return operand->codeGen();
     else {
-        Value *result = expression->codeGen();
+        Value *rhs = expression->codeGen();
         Value *variable = var->codeGen();
-        if (!typeNoSmaller(variable->getType(), result->getType())) {
-            // Error!
-        } else {
-            if (variable->getType() != result->getType())
-                result = Builder.CreateIntCast(result, variable->getType(), true);
-            if (*op == "ASSIGN") {
+        Value *varValue = Builder.CreateLoad(variable, *(var->id));
+        Value *result = rhs;
+
+        if (varValue->getType() != rhs->getType())
+            rhs = Builder.CreateIntCast(rhs, varValue->getType(), true);
+
+
+        if (*op == "ASSIGN") {
+            Builder.CreateStore(rhs, variable);
+        } else if (*op == "BANDASSIGN") {
+            result = Builder.CreateAnd(varValue, rhs);
+            Builder.CreateStore(result, variable);
+        } else if (*op == "BORASSIGN") {
+            result = Builder.CreateOr(varValue, rhs);
+            Builder.CreateStore(result, variable);
+        } else if (*op == "BXORASSIGN") {
+            result = Builder.CreateXor(varValue, rhs);
+            Builder.CreateStore(result, variable);
+        } else if (*op == "SLASSIGN") {
+            result = Builder.CreateShl(varValue, rhs);
+            Builder.CreateStore(result, variable);
+        } else if (*op == "SLASSIGN") {
+            result = Builder.CreateAShr(varValue, rhs);
+            Builder.CreateStore(result, variable);
+        } else if (rhs->getType() != Type::getFloatTy(TheContext)) {
+            if (*op == "PLUSASSIGN") {
+                result = Builder.CreateAdd(varValue, rhs);
                 Builder.CreateStore(result, variable);
-            } else if (*op == "BANDASSIGN") {
-                Value *tmp = Builder.CreateAnd(variable, result);
-                Builder.CreateStore(tmp, variable);
-            } else if (*op == "BORASSIGN") {
-                Value *tmp = Builder.CreateOr(variable, result);
-                Builder.CreateStore(tmp, variable);
-            } else if (*op == "BXORASSIGN") {
-                Value *tmp = Builder.CreateXor(variable, result);
-                Builder.CreateStore(tmp, variable);
-            } else if (*op == "SLASSIGN") {
-                Value *tmp = Builder.CreateShl(variable, result);
-                Builder.CreateStore(tmp, variable);
-            } else if (*op == "SLASSIGN") {
-                Value *tmp = Builder.CreateAShr(variable, result);
-                Builder.CreateStore(tmp, variable);
-            } else if (result->getType() != Type::getFloatTy(TheContext)) {
-                if (*op == "PLUSASSIGN") {
-                    Value *tmp = Builder.CreateAdd(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "MINUSASSIGN") {
-                    Value *tmp = Builder.CreateSub(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "MULTASSIGN") {
-                    Value *tmp = Builder.CreateMul(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "DIVASSIGN") {
-                    Value *tmp = Builder.CreateSDiv(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "MODASSIGN") {
-                    Value *tmp = Builder.CreateSRem(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                }
-            } else {
-                if (*op == "PLUSASSIGN") {
-                    Value *tmp = Builder.CreateFAdd(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "MINUSASSIGN") {
-                    Value *tmp = Builder.CreateFSub(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "MULTASSIGN") {
-                    Value *tmp = Builder.CreateFMul(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "DIVASSIGN") {
-                    Value *tmp = Builder.CreateFDiv(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                } else if (*op == "MODASSIGN") {
-                    Value *tmp = Builder.CreateFRem(variable, result);
-                    Builder.CreateStore(tmp, variable);
-                }
+            } else if (*op == "MINUSASSIGN") {
+                result = Builder.CreateSub(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            } else if (*op == "MULTASSIGN") {
+                result = Builder.CreateMul(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            } else if (*op == "DIVASSIGN") {
+                result = Builder.CreateSDiv(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            } else if (*op == "MODASSIGN") {
+                result = Builder.CreateSRem(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            }
+        } else {
+            if (*op == "PLUSASSIGN") {
+                result = Builder.CreateFAdd(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            } else if (*op == "MINUSASSIGN") {
+                result = Builder.CreateFSub(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            } else if (*op == "MULTASSIGN") {
+                result = Builder.CreateFMul(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            } else if (*op == "DIVASSIGN") {
+                result = Builder.CreateFDiv(varValue, rhs);
+                Builder.CreateStore(result, variable);
+            } else if (*op == "MODASSIGN") {
+                result = Builder.CreateFRem(varValue, rhs);
+                Builder.CreateStore(result, variable);
             }
         }
-        return variable;
+        return result;
     }
 }
 
@@ -783,7 +795,7 @@ Value * OperandNode::codeGen() {
     }
     else {
         Value * left = lhs->codeGen();
-        Value * right = lhs->codeGen();
+        Value * right = rhs->codeGen();
         if(left->getType() != right->getType()) {
             if(type2int(left->getType()) > type2int(right->getType()))
                 right = Builder.CreateIntCast(right, left->getType(), true);
@@ -917,8 +929,10 @@ void OperandNode::printNode(int layer) {
 
 Value * SingleNode::codeGen() {
     cout << "Running codeGen for Single." << endl;
-    if(varNode != nullptr)
-        return varNode->codeGen();
+    if(varNode != nullptr){
+        Value *varValue = Builder.CreateLoad(varNode->codeGen(), *(varNode->id));
+        return varValue;
+    }
     else if(callNode != nullptr)
         return callNode->codeGen();
     else if(intNode != nullptr)
